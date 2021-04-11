@@ -37,6 +37,7 @@ public class FileBrowser implements Initializable {
     public void sendCommand(ActionEvent actionEvent) {
         networkService.sendCommand(commandTextField.getText().trim());
         commandTextField.clear();
+        commandTextField.requestFocus();
     }
 
     public void shutdown() {

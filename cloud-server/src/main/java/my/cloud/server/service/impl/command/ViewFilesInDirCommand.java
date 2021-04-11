@@ -12,7 +12,7 @@ public class ViewFilesInDirCommand implements CommandService {
 
         String[] actualCommandParts = command.split("\\s");
         if (actualCommandParts.length != requirementCountCommandParts) {
-            throw new IllegalArgumentException("Command \"" + getCommand() + "\" is not correct");
+            return "Command \"" + getCommand() + "\" is not correct";
         }
 
         return process(actualCommandParts[1]);
@@ -23,6 +23,10 @@ public class ViewFilesInDirCommand implements CommandService {
 
         if (!directory.exists()) {
             return "Directory is not exists";
+        }
+
+        if (directory.isFile()) {
+            return dirPath;
         }
 
         StringBuilder builder = new StringBuilder();
