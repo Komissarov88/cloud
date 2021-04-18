@@ -21,8 +21,9 @@ public class FileBrowser implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         networkService = Factory.getNetworkService();
+        networkService.connect();
 
-        createCommandResultHandler();
+//        createCommandResultHandler();
     }
 
     private void createCommandResultHandler() {
