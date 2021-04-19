@@ -1,6 +1,6 @@
-package my.cloud.server.service.impl.command;
+package my.cloud.server.service.command.commands;
 
-import my.cloud.server.service.CommandService;
+import my.cloud.server.service.command.CommandService;
 
 import java.io.File;
 

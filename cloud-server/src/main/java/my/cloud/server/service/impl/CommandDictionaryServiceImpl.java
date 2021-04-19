@@ -2,7 +2,7 @@ package my.cloud.server.service.impl;
 
 import my.cloud.server.factory.Factory;
 import my.cloud.server.service.CommandDictionaryService;
-import my.cloud.server.service.CommandService;
+import my.cloud.server.service.command.CommandService;
 
 import java.util.Collections;
 import java.util.HashMap;
