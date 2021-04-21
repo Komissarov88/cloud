@@ -17,8 +17,15 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("client disconnected");
+        Factory.getServerService().unsubscribeUser(ctx.channel());
+    }
+
+    @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
-        Factory.getCommandDirectoryService().processCommand(msg, ctx);
+        System.out.println(msg);
+        Factory.getCommandDictionaryService().processCommand(msg, ctx);
     }
 
     @Override

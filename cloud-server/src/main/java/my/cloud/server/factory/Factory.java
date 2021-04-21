@@ -1,18 +1,18 @@
 package my.cloud.server.factory;
 
+import command.CommandDictionaryService;
 import my.cloud.server.service.*;
-import my.cloud.server.service.command.CommandService;
-import my.cloud.server.service.command.commands.AuthenticateUser;
+import my.cloud.server.service.commands.*;
 import my.cloud.server.service.database.PostgresService;
-import my.cloud.server.service.command.impl.CommandDictionaryServiceImpl;
+import command.impl.CommandDictionaryServiceImpl;
 import my.cloud.server.service.files.FileJobService;
 import my.cloud.server.service.impl.NettyServerService;
-import my.cloud.server.service.command.commands.ViewFilesInDirCommand;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class Factory {
+
+    private static CommandDictionaryService commandDictionaryService;
 
     public static ServerService getServerService() {
         return NettyServerService.getInstance();
@@ -22,14 +22,18 @@ public class Factory {
         return PostgresService.getInstance();
     }
 
-    public static CommandDictionaryService getCommandDirectoryService() {
-        return CommandDictionaryServiceImpl.getInstance();
-    }
-
-    public static List<CommandService> getCommandServices() {
-        return Arrays.asList(
-                new ViewFilesInDirCommand(),
-                new AuthenticateUser());
+    public static CommandDictionaryService getCommandDictionaryService() {
+        if (commandDictionaryService == null) {
+            return new CommandDictionaryServiceImpl(Arrays.asList(
+                    new ViewFilesInDirCommand(),
+                    new AuthenticateUser(),
+                    new Download(),
+                    new DownloadRequest(),
+                    new Upload(),
+                    new UploadRequest()
+            ));
+        }
+        return commandDictionaryService;
     }
 
     public static FileJobService getFileJobService() {

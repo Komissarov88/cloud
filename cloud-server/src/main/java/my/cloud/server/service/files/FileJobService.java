@@ -1,16 +1,19 @@
 package my.cloud.server.service.files;
 
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import io.netty.channel.Channel;
+import utils.Hash;
+
+import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileJobService {
 
     private static FileJobService fileJobService;
-    private Set<FileJob> jobs;
+    private ConcurrentHashMap<String, FileJob> jobs;
 
     private FileJobService() {
-        jobs = new HashSet<>();
+        jobs = new ConcurrentHashMap<>();
     }
 
     public static FileJobService getInstance() {
@@ -20,19 +23,20 @@ public class FileJobService {
         return fileJobService;
     }
 
-    public String add(Path path, String login) {
-        FileJob job = new FileJob(path, login);
-        if (!jobs.add(job)) {
-            throw new IllegalArgumentException("job already exists");
-        }
-        return job.getAuthenticateKey();
+    public String add(File file, Channel channel) {
+        String hash = Hash.get(channel.toString() + file);
+        jobs.putIfAbsent(hash, new FileJob(channel, file));
+        return hash;
     }
 
-    public void remove(Path path, String login) {
-        for (FileJob job : jobs) {
-            if (job.equals(path, login)) {
-                jobs.remove(job);
-                return;
+    public FileJob remove(String key) {
+        return jobs.remove(key);
+    }
+
+    public void clean() {
+        for (Map.Entry<String, FileJob> stringFileJobEntry : jobs.entrySet()) {
+            if (!stringFileJobEntry.getValue().userChannel.isOpen()) {
+                jobs.remove(stringFileJobEntry.getKey());
             }
         }
     }

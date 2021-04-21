@@ -1,51 +1,16 @@
 package my.cloud.server.service.files;
 
-import utils.Hash;
+import io.netty.channel.Channel;
 
-import java.nio.file.Path;
+import java.io.File;
 
 public class FileJob {
 
-    private final String hash;
-    private final Path path;
-    private final String login;
+    public final Channel userChannel;
+    public final File file;
 
-    public FileJob(Path path, String login) {
-        if (path == null || login == null) {
-            throw new IllegalArgumentException("fields must be not null");
-        }
-        this.path = path;
-        this.login = login;
-        hash = Hash.get(login + path);
-    }
-
-    public String getAuthenticateKey() {
-        return hash;
-    }
-
-    public Path getPath() {
-        return path;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        FileJob fileJob = (FileJob) o;
-
-        if (!path.equals(fileJob.path)) return false;
-        return login.equals(fileJob.login);
-    }
-
-    public boolean equals(Path path, String login) {
-        return path.equals(this.path) && login.equals(this.login);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = path.hashCode();
-        result = 31 * result + login.hashCode();
-        return result;
+    public FileJob(Channel userChannel, File file) {
+        this.userChannel = userChannel;
+        this.file = file;
     }
 }

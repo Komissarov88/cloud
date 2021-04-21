@@ -1,11 +1,10 @@
-package my.cloud.server.service.command.impl;
+package command.impl;
 
 import command.Command;
 import command.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
-import my.cloud.server.factory.Factory;
-import my.cloud.server.service.CommandDictionaryService;
-import my.cloud.server.service.command.CommandService;
+import command.CommandDictionaryService;
+import command.CommandService;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,29 +16,16 @@ public class CommandDictionaryServiceImpl implements CommandDictionaryService {
 
     private final Map<CommandCode, CommandService> commandDictionary;
 
-    private static CommandDictionaryServiceImpl instance;
-
     private static Logger logger = Logger.getLogger(CommandDictionaryServiceImpl.class.getName());
 
-    public static CommandDictionaryServiceImpl getInstance() {
-        if (instance == null) {
-            instance = new CommandDictionaryServiceImpl();
-        }
-        return instance;
-    }
-    private CommandDictionaryServiceImpl() {
-        commandDictionary = Collections.unmodifiableMap(getCommonDictionary());
-    }
-
-    private Map<CommandCode, CommandService> getCommonDictionary() {
-        List<CommandService> commandServices = Factory.getCommandServices();
+    public CommandDictionaryServiceImpl(List<CommandService> commandServices) {
 
         Map<CommandCode, CommandService> commandDictionary = new HashMap<>();
         for (CommandService commandService : commandServices) {
             commandDictionary.put(commandService.getCommand(), commandService);
         }
 
-        return commandDictionary;
+        this.commandDictionary = Collections.unmodifiableMap(commandDictionary);
     }
 
     @Override

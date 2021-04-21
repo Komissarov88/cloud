@@ -1,13 +1,12 @@
-package my.cloud.server.service.command.commands;
+package my.cloud.server.service.commands;
 
 import command.Command;
 import command.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.command.CommandService;
+import command.CommandService;
 
 import java.io.File;
-import java.util.Arrays;
 
 public class ViewFilesInDirCommand implements CommandService {
 
@@ -16,8 +15,8 @@ public class ViewFilesInDirCommand implements CommandService {
         final int requirementCountCommandParts = 1;
 
         if (command.getArgs().length != requirementCountCommandParts
-                || Factory.getServerService().isUserLoggedIn(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL));
+                || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
             return;
         }
 

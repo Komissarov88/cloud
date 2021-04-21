@@ -1,4 +1,4 @@
-package my.cloud.server.service;
+package command;
 
 import command.Command;
 import io.netty.channel.ChannelHandlerContext;

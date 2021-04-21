@@ -4,6 +4,7 @@ import command.Command;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -14,11 +15,14 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import my.cloud.client.service.NetworkService;
 import utils.PropertiesReader;
 
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 public class NettyNetworkService implements NetworkService {
 
     private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));;
     private final String ADDRESS = PropertiesReader.getProperty("server.address");
-    SocketChannel socketChannel;
+    private SocketChannel socketChannel;
+    private final ConcurrentLinkedDeque<Command> income;
 
     private static NettyNetworkService instance;
 
@@ -29,7 +33,15 @@ public class NettyNetworkService implements NetworkService {
         return instance;
     }
 
-    private NettyNetworkService() {}
+    private NettyNetworkService() {
+        income = new ConcurrentLinkedDeque<>();
+    }
+
+    private void defaultPipeline(ChannelPipeline pipeline) {
+        pipeline.addLast("ObjectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+        pipeline.addLast("ObjectEncoder", new ObjectEncoder());
+        pipeline.addLast("MainInboundHandler", new MainInboundHandler());
+    }
 
     @Override
     public void connect() {
@@ -46,10 +58,7 @@ public class NettyNetworkService implements NetworkService {
                             @Override
                             protected void initChannel(SocketChannel socketChannel) throws Exception {
                                 NettyNetworkService.this.socketChannel = socketChannel;
-                                socketChannel.pipeline().addLast(
-                                        new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                        new ObjectEncoder(),
-                                        new MainInboundHandler());
+                                defaultPipeline(socketChannel.pipeline());
                             }
                         });
                 ChannelFuture future = b.connect(ADDRESS, PORT).sync();
@@ -71,7 +80,16 @@ public class NettyNetworkService implements NetworkService {
 
     @Override
     public Command readCommandResult() {
-        return null;
+        synchronized (income){
+            try {
+                if (income.isEmpty()) {
+                    Thread.currentThread().wait();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return income.poll();
     }
 
     @Override
