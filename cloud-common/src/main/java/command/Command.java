@@ -3,6 +3,9 @@ package command;
 import java.io.Serializable;
 import java.util.Arrays;
 
+/**
+ * Main exchange unit between client and server
+ */
 public class Command implements Serializable {
 
     private CommandCode code;

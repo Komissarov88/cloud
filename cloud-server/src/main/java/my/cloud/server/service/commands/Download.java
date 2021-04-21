@@ -2,16 +2,21 @@ package my.cloud.server.service.commands;
 
 import command.Command;
 import command.CommandCode;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import my.cloud.server.factory.Factory;
 import command.CommandService;
 import my.cloud.server.service.files.FileJob;
+import utils.Logger;
 
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Called from download channel with authenticate key
+ */
 public class Download implements CommandService {
 
     private ChunkedFile getChunkedFile(File file) {
@@ -25,14 +30,19 @@ public class Download implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
+        Logger.info(command.toString());
 
         if (command.getArgs() == null
-                || command.getArgs().length != 1) {
+                || command.getArgs().length != 2) {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.close();
             return;
         }
 
-        FileJob job = Factory.getFileJobService().remove(command.getArgs()[0]);
+        String key = command.getArgs()[0];
+        String clientPath = command.getArgs()[1];
+
+        FileJob job = Factory.getFileJobService().remove(key);
         if (job != null) {
             ChunkedFile cf;
             if ((cf = getChunkedFile(job.file)) == null) {
@@ -42,18 +52,19 @@ public class Download implements CommandService {
             }
 
             try {
-                ctx.writeAndFlush(new Command(CommandCode.OK, "transfer ready")).sync();
+                ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_READY, clientPath)).sync();
                 ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
                 ctx.pipeline().removeLast();
-                ctx.writeAndFlush(cf).sync();
+                ctx.writeAndFlush(cf).addListener((ChannelFutureListener) future -> {
+                    Logger.info("download complete");
+                    ctx.close();
+                });
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                ctx.close();
             }
-            return;
+        } else {
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "authentication fails"));
         }
-        ctx.writeAndFlush(new Command(CommandCode.FAIL, "authentication fails"));
     }
 
     @Override

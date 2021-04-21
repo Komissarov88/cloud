@@ -4,6 +4,9 @@ import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Used form hashing passwords and FileJobs on server
+ */
 public class Hash {
 
     public static String get(String msg) {

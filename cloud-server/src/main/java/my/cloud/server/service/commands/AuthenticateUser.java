@@ -5,11 +5,16 @@ import command.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.CommandService;
+import utils.Logger;
 
+/**
+ * Called when client want to login
+ */
 public class AuthenticateUser implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
+        Logger.info(command.toString());
 
         if (command.getArgs() == null || command.getArgs().length != 2) {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));

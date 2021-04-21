@@ -4,27 +4,26 @@ import command.Command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import my.cloud.server.factory.Factory;
+import utils.Logger;
 
-import java.util.logging.Logger;
-
+/**
+ * Translates incoming messages to command dictionary service
+ */
 public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
-
-    private static Logger logger = Logger.getLogger(MainInboundHandler.class.getName());
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        logger.info("client connected");
+        Logger.info("client connected");
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("client disconnected");
+        Logger.info("client disconnected");
         Factory.getServerService().unsubscribeUser(ctx.channel());
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
-        System.out.println(msg);
         Factory.getCommandDictionaryService().processCommand(msg, ctx);
     }
 

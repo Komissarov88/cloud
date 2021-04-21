@@ -3,15 +3,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <VBox prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="my.cloud.client.controller.FileBrowser">
    <children>
       <HBox>
          <children>
-            <TextField HBox.hgrow="ALWAYS" fx:id="commandTextField" onAction="#sendCommand"/>
-            <Button mnemonicParsing="false" text="Button" onAction="#sendCommand"/>
+            <TextField fx:id="commandTextField" onAction="#sendCommand" promptText="qwerty" HBox.hgrow="ALWAYS" />
+            <Button mnemonicParsing="false" onAction="#sendCommand" text="auth" />
+            <Button mnemonicParsing="false" onAction="#download" text="download" />
+            <Button mnemonicParsing="false" onAction="#upload" text="upload" />
          </children>
       </HBox>
-      <TextArea VBox.vgrow="ALWAYS" fx:id="commandResultTextArea"/>
+      <TextArea fx:id="commandResultTextArea" promptText="password &quot;qwerty&quot;" VBox.vgrow="ALWAYS" />
    </children>
 </VBox>

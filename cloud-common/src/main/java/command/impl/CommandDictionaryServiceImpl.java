@@ -5,18 +5,16 @@ import command.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import command.CommandDictionaryService;
 import command.CommandService;
+import utils.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class CommandDictionaryServiceImpl implements CommandDictionaryService {
 
     private final Map<CommandCode, CommandService> commandDictionary;
-
-    private static Logger logger = Logger.getLogger(CommandDictionaryServiceImpl.class.getName());
 
     public CommandDictionaryServiceImpl(List<CommandService> commandServices) {
 
@@ -32,7 +30,7 @@ public class CommandDictionaryServiceImpl implements CommandDictionaryService {
     public void processCommand(Command command, ChannelHandlerContext ctx) {
         CommandService c = commandDictionary.get(command.getCode());
         if (c == null) {
-            logger.warning("command not found");
+            Logger.warning("command not found");
             return;
         }
        c.processCommand(command, ctx);

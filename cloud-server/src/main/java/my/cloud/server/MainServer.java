@@ -1,13 +1,11 @@
 package my.cloud.server;
 
 import my.cloud.server.factory.Factory;
+import utils.Logger;
 
 import java.util.Scanner;
-import java.util.logging.Logger;
 
 public class MainServer {
-
-    private static Logger logger = Logger.getLogger(MainServer.class.getName());
 
     public static void main(String[] args) {
         Migrations.migrate();
@@ -16,11 +14,12 @@ public class MainServer {
             Factory.getServerService().startServer();
         }).start();
 
+        Logger.info("Server started. Print \"stop\" to quit");
         Scanner scanner = new Scanner(System.in);
         while(true) {
             String s = scanner.nextLine();
             if (s.equals("stop")) {
-                logger.info("stopping server...");
+                Logger.info("stopping server...");
                 Factory.getServerService().stopServer();
                 break;
             }

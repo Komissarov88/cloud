@@ -12,19 +12,24 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import utils.Logger;
 import utils.PropertiesReader;
 
-import java.util.concurrent.ConcurrentLinkedDeque;
-
+/**
+ * Class used for all connection to server
+ */
 public class CloudConnection implements Runnable{
 
     private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));
     private final String ADDRESS = PropertiesReader.getProperty("server.address");
     private SocketChannel socketChannel;
-    private final ConcurrentLinkedDeque<Command> income;
+    private Command initialCommand;
 
-    public CloudConnection(Command command) {
-        this.income = new ConcurrentLinkedDeque<>();
+    /**
+     * @param initialCommand sends to server right after connection
+     */
+    public CloudConnection(Command initialCommand) {
+        this.initialCommand = initialCommand;
     }
 
     private void defaultPipeline(ChannelPipeline pipeline) {
@@ -48,11 +53,34 @@ public class CloudConnection implements Runnable{
                         }
                     });
             ChannelFuture future = b.connect(ADDRESS, PORT).sync();
+            if (initialCommand != null) {
+                socketChannel.writeAndFlush(initialCommand);
+            }
             future.channel().closeFuture().sync();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             workerGroup.shutdownGracefully();
+            Logger.info("connection closed");
         }
+    }
+
+    public void sendCommand(Command command) {
+        if (isConnected()) {
+            socketChannel.writeAndFlush(command);
+        }
+    }
+
+    public void disconnect() {
+        if (isConnected()) {
+            socketChannel.close();
+        }
+    }
+
+    public boolean isConnected() {
+        if (socketChannel == null) {
+            return false;
+        }
+        return socketChannel.isOpen();
     }
 }

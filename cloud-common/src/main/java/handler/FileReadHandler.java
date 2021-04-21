@@ -2,15 +2,17 @@ package handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
-public class FileReadHandler extends SimpleChannelInboundHandler<ByteBuf> {
+/**
+ * Writes incoming bytes to file with overwrite
+ */
+public class FileReadHandler extends ChannelInboundHandlerAdapter {
 
     public final OutputStream outputStream;
     private long bytesReceived;
@@ -18,7 +20,7 @@ public class FileReadHandler extends SimpleChannelInboundHandler<ByteBuf> {
     public FileReadHandler(Path path) {
         OutputStream os = null;
         try {
-            os = Files.newOutputStream(path, StandardOpenOption.CREATE_NEW);
+            os = Files.newOutputStream(path);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -36,14 +38,19 @@ public class FileReadHandler extends SimpleChannelInboundHandler<ByteBuf> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        outputStream.write(msg.array());
-        bytesReceived += msg.readableBytes();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf buf = (ByteBuf) msg;
+        if (buf.isReadable()) {
+            buf.readBytes(outputStream, buf.readableBytes());
+            bytesReceived += buf.readableBytes();
+        }
+        buf.release();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
         outputStream.close();
+        ctx.close();
     }
 }

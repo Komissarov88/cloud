@@ -9,7 +9,6 @@ public class PropertiesReader {
     private static final String RESOURCE = "common.properties";
     private static final Properties properties;
 
-
     static  {
         InputStream is = PropertiesReader.class.getClassLoader()
                 .getResourceAsStream(RESOURCE);

@@ -21,7 +21,6 @@
             <groupId>my.cloud</groupId>
             <artifactId>cloud-common</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

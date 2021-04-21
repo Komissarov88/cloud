@@ -7,6 +7,9 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Manages FileJobs, used to authenticate upload/download channels
+ */
 public class FileJobService {
 
     private static FileJobService fileJobService;

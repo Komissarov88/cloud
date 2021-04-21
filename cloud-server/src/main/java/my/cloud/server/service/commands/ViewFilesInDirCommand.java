@@ -5,13 +5,19 @@ import command.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.CommandService;
+import utils.Logger;
 
 import java.io.File;
 
+/**
+ * return files in server directory
+ */
 public class ViewFilesInDirCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
+        Logger.info(command.toString());
+
         final int requirementCountCommandParts = 1;
 
         if (command.getArgs().length != requirementCountCommandParts

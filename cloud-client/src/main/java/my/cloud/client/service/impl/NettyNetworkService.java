@@ -1,30 +1,16 @@
 package my.cloud.client.service.impl;
 
 import command.Command;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import command.CommandCode;
 import my.cloud.client.service.NetworkService;
-import utils.PropertiesReader;
 
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.io.File;
+import java.nio.file.Path;
 
 public class NettyNetworkService implements NetworkService {
 
-    private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));;
-    private final String ADDRESS = PropertiesReader.getProperty("server.address");
-    private SocketChannel socketChannel;
-    private final ConcurrentLinkedDeque<Command> income;
-
     private static NettyNetworkService instance;
+    private CloudConnection mainConnection;
 
     public static NetworkService getInstance() {
         if (instance == null) {
@@ -34,72 +20,51 @@ public class NettyNetworkService implements NetworkService {
     }
 
     private NettyNetworkService() {
-        income = new ConcurrentLinkedDeque<>();
-    }
-
-    private void defaultPipeline(ChannelPipeline pipeline) {
-        pipeline.addLast("ObjectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-        pipeline.addLast("ObjectEncoder", new ObjectEncoder());
-        pipeline.addLast("MainInboundHandler", new MainInboundHandler());
     }
 
     @Override
-    public void connect() {
+    public void connect(String login, String password) {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
-        new Thread(()-> {
-            EventLoopGroup workerGroup = new NioEventLoopGroup();
-            try {
-                Bootstrap b = new Bootstrap();
-                b.group(workerGroup)
-                        .channel(NioSocketChannel.class)
-                        .handler(new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                NettyNetworkService.this.socketChannel = socketChannel;
-                                defaultPipeline(socketChannel.pipeline());
-                            }
-                        });
-                ChannelFuture future = b.connect(ADDRESS, PORT).sync();
-                future.channel().closeFuture().sync();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                workerGroup.shutdownGracefully();
-            }
-        }).start();
+        mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
+        new Thread(mainConnection).start();
+    }
+
+    @Override
+    public void downloadFile(Path file) {
+        mainConnection.sendCommand(new Command(CommandCode.DOWNLOAD_REQUEST, file.toString()));
+    }
+
+    @Override
+    public void uploadFile(File file) {
+        if (!file.canRead()) {
+            return;
+        }
+        String[] args = {file.toString(),
+                String.valueOf(file.length())
+        };
+        mainConnection.sendCommand(new Command(CommandCode.UPLOAD_REQUEST, args));
     }
 
     @Override
     public void sendCommand(Command command) {
         if (isConnected()) {
-            socketChannel.writeAndFlush(command);
+            mainConnection.sendCommand(command);
         }
-    }
-
-    @Override
-    public Command readCommandResult() {
-        synchronized (income){
-            try {
-                if (income.isEmpty()) {
-                    Thread.currentThread().wait();
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return income.poll();
     }
 
     @Override
     public void closeConnection() {
-        if (isConnected()) {
-            socketChannel.close();
+        if (mainConnection != null) {
+            mainConnection.disconnect();
         }
     }
 
     public boolean isConnected() {
-        return socketChannel != null && socketChannel.isOpen();
+        if (mainConnection == null) {
+            return false;
+        }
+        return mainConnection.isConnected();
     }
 }
