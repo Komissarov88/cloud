@@ -1,27 +1,33 @@
 package my.cloud.client.service.impl;
 
-import io.netty.buffer.ByteBuf;
+import command.Command;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
+import my.cloud.client.factory.Factory;
+import utils.Logger;
 
-import java.nio.charset.StandardCharsets;
-
-public class MainInboundHandler extends ChannelInboundHandlerAdapter {
+/**
+ * Translates incoming messages to command dictionary service
+ */
+public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Client connected");
+    public void channelActive(ChannelHandlerContext ctx) {
+        Logger.info("server connected");
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf) msg;
-        System.out.println(buf.toString(StandardCharsets.UTF_8));
-        buf.release();
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        Logger.info("server disconnected");
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
+        Factory.getCommandDictionaryService().processCommand(msg, ctx);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
     }

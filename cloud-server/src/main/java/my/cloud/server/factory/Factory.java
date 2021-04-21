@@ -1,33 +1,42 @@
 package my.cloud.server.factory;
 
-import my.cloud.server.service.ClientService;
-import my.cloud.server.service.CommandDictionaryService;
-import my.cloud.server.service.CommandService;
-import my.cloud.server.service.ServerService;
-import my.cloud.server.service.impl.CommandDictionaryServiceImpl;
+import command.CommandDictionaryService;
+import my.cloud.server.service.*;
+import my.cloud.server.service.commands.*;
+import my.cloud.server.service.database.PostgresService;
+import command.impl.CommandDictionaryServiceImpl;
+import my.cloud.server.service.files.FileJobService;
 import my.cloud.server.service.impl.NettyServerService;
-import my.cloud.server.service.impl.command.ViewFilesInDirCommand;
 
-import java.net.Socket;
 import java.util.Arrays;
-import java.util.List;
 
 public class Factory {
+
+    private static CommandDictionaryService commandDictionaryService;
 
     public static ServerService getServerService() {
         return NettyServerService.getInstance();
     }
 
-    public static ClientService getClientService(Socket socket) {
-        return null;
+    public static DbService getDbService() {
+        return PostgresService.getInstance();
     }
 
-    public static CommandDictionaryService getCommandDirectoryService() {
-        return new CommandDictionaryServiceImpl();
+    public static CommandDictionaryService getCommandDictionaryService() {
+        if (commandDictionaryService == null) {
+            return new CommandDictionaryServiceImpl(Arrays.asList(
+                    new ViewFilesInDirCommand(),
+                    new AuthenticateUser(),
+                    new Download(),
+                    new DownloadRequest(),
+                    new Upload(),
+                    new UploadRequest()
+            ));
+        }
+        return commandDictionaryService;
     }
 
-    public static List<CommandService> getCommandServices() {
-        return Arrays.asList(new ViewFilesInDirCommand());
+    public static FileJobService getFileJobService() {
+        return FileJobService.getInstance();
     }
-
 }

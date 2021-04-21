@@ -1,25 +1,16 @@
 package my.cloud.client.service.impl;
 
 import command.Command;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import command.CommandCode;
 import my.cloud.client.service.NetworkService;
+
+import java.io.File;
+import java.nio.file.Path;
 
 public class NettyNetworkService implements NetworkService {
 
-    private final int PORT = 8189;
-    private final String ADDRESS = "localhost";
-    SocketChannel socketChannel;
-
     private static NettyNetworkService instance;
+    private CloudConnection mainConnection;
 
     public static NetworkService getInstance() {
         if (instance == null) {
@@ -29,59 +20,51 @@ public class NettyNetworkService implements NetworkService {
     }
 
     private NettyNetworkService() {
-        System.out.println("new network");
     }
 
     @Override
-    public void connect() {
+    public void connect(String login, String password) {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
-        new Thread(()-> {
-            EventLoopGroup workerGroup = new NioEventLoopGroup();
-            try {
-                Bootstrap b = new Bootstrap();
-                b.group(workerGroup)
-                        .channel(NioSocketChannel.class)
-                        .handler(new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                                NettyNetworkService.this.socketChannel = socketChannel;
-                                socketChannel.pipeline().addLast(
-                                        new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                        new ObjectEncoder());
-                            }
-                        });
-                ChannelFuture future = b.connect(ADDRESS, PORT).sync();
-                future.channel().closeFuture().sync();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                workerGroup.shutdownGracefully();
-            }
-        }).start();
+        mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
+        new Thread(mainConnection).start();
     }
 
     @Override
-    public void sendCommand(String command) {
-        if (isConnected()) {
-            socketChannel.writeAndFlush(new Command(command));
+    public void downloadFile(Path file) {
+        mainConnection.sendCommand(new Command(CommandCode.DOWNLOAD_REQUEST, file.toString()));
+    }
+
+    @Override
+    public void uploadFile(File file) {
+        if (!file.canRead()) {
+            return;
         }
+        String[] args = {file.toString(),
+                String.valueOf(file.length())
+        };
+        mainConnection.sendCommand(new Command(CommandCode.UPLOAD_REQUEST, args));
     }
 
     @Override
-    public String readCommandResult() {
-        return "null";
+    public void sendCommand(Command command) {
+        if (isConnected()) {
+            mainConnection.sendCommand(command);
+        }
     }
 
     @Override
     public void closeConnection() {
-        if (isConnected()) {
-            socketChannel.close();
+        if (mainConnection != null) {
+            mainConnection.disconnect();
         }
     }
 
     public boolean isConnected() {
-        return socketChannel != null && socketChannel.isOpen();
+        if (mainConnection == null) {
+            return false;
+        }
+        return mainConnection.isConnected();
     }
 }
