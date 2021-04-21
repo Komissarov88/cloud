@@ -1,16 +1,18 @@
 package my.cloud.server.service.database;
 
+import utils.PropertiesReader;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DbConnector {
 
-    private static int PORT = 5432;
-    private static String HOST = "localhost";
-    private static String DB = "cloud";
-    private static String USER = "postgres";
-    private static String PWD = "postgrespass";
+    private static int PORT = Integer.parseInt(PropertiesReader.getProperty("db.port"));
+    private static String HOST = PropertiesReader.getProperty("db.address");
+    private static String DB = PropertiesReader.getProperty("db.name");
+    private static String USER = PropertiesReader.getProperty("db.user");
+    private static String PWD = PropertiesReader.getProperty("db.password");
 
     private Connection connection;
 

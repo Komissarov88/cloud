@@ -12,11 +12,12 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import my.cloud.client.service.NetworkService;
+import utils.PropertiesReader;
 
 public class NettyNetworkService implements NetworkService {
 
-    private final int PORT = 8189;
-    private final String ADDRESS = "localhost";
+    private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));;
+    private final String ADDRESS = PropertiesReader.getProperty("server.address");
     SocketChannel socketChannel;
 
     private static NettyNetworkService instance;
@@ -28,9 +29,7 @@ public class NettyNetworkService implements NetworkService {
         return instance;
     }
 
-    private NettyNetworkService() {
-        System.out.println("new network");
-    }
+    private NettyNetworkService() {}
 
     @Override
     public void connect() {
@@ -49,7 +48,8 @@ public class NettyNetworkService implements NetworkService {
                                 NettyNetworkService.this.socketChannel = socketChannel;
                                 socketChannel.pipeline().addLast(
                                         new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                        new ObjectEncoder());
+                                        new ObjectEncoder(),
+                                        new MainInboundHandler());
                             }
                         });
                 ChannelFuture future = b.connect(ADDRESS, PORT).sync();
@@ -63,15 +63,15 @@ public class NettyNetworkService implements NetworkService {
     }
 
     @Override
-    public void sendCommand(String command) {
+    public void sendCommand(Command command) {
         if (isConnected()) {
-            socketChannel.writeAndFlush(new Command(command));
+            socketChannel.writeAndFlush(command);
         }
     }
 
     @Override
-    public String readCommandResult() {
-        return "null";
+    public Command readCommandResult() {
+        return null;
     }
 
     @Override

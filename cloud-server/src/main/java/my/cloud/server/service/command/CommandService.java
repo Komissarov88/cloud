@@ -1,7 +1,11 @@
 package my.cloud.server.service.command;
 
+import command.Command;
+import command.CommandCode;
+import io.netty.channel.ChannelHandlerContext;
+
 public interface CommandService {
 
-    String processCommand(String command);
-    String getCommand();
+    void processCommand(Command command, ChannelHandlerContext ctx);
+    CommandCode getCommand();
 }

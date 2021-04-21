@@ -1,7 +1,10 @@
 package my.cloud.server.service;
 
+import command.Command;
+import io.netty.channel.ChannelHandlerContext;
+
 public interface CommandDictionaryService {
 
-    String processCommand(String command);
+    void processCommand(Command command, ChannelHandlerContext ctx);
 
 }

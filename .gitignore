@@ -6,3 +6,5 @@
 /cloud-client/cloud-client.iml
 /cloud-server/cloud-server.iml
 /cloud-common/cloud-common.iml
+/cloud-common/target/
+/target/

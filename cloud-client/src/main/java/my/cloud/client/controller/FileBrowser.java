@@ -1,6 +1,7 @@
 package my.cloud.client.controller;
 
-import javafx.application.Platform;
+import command.Command;
+import command.CommandCode;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
@@ -26,17 +27,18 @@ public class FileBrowser implements Initializable {
 //        createCommandResultHandler();
     }
 
-    private void createCommandResultHandler() {
-        new Thread(() -> {
-            while (true) {
-                String resultCommand = networkService.readCommandResult();
-                Platform.runLater(() -> commandResultTextArea.appendText(resultCommand + System.lineSeparator()));
-            }
-        }).start();
-    }
+//    private void createCommandResultHandler() {
+//        new Thread(() -> {
+//            while (true) {
+//                String resultCommand = networkService.readCommandResult();
+//                Platform.runLater(() -> commandResultTextArea.appendText(resultCommand + System.lineSeparator()));
+//            }
+//        }).start();
+//    }
 
     public void sendCommand(ActionEvent actionEvent) {
-        networkService.sendCommand(commandTextField.getText().trim());
+        String[] lp = {commandTextField.getText().trim(), "qwerty"};
+        networkService.sendCommand(new Command(CommandCode.AUTH, lp));
         commandTextField.clear();
         commandTextField.requestFocus();
     }

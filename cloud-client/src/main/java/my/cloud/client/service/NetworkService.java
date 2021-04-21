@@ -1,9 +1,11 @@
 package my.cloud.client.service;
 
+import command.Command;
+
 public interface NetworkService {
 
-    void sendCommand(String command);
-    String readCommandResult();
+    void sendCommand(Command command);
+    Command readCommandResult();
     void closeConnection();
     void connect();
 }

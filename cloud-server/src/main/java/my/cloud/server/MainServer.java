@@ -10,6 +10,7 @@ public class MainServer {
     private static Logger logger = Logger.getLogger(MainServer.class.getName());
 
     public static void main(String[] args) {
+        Migrations.migrate();
 
         new Thread(() -> {
             Factory.getServerService().startServer();

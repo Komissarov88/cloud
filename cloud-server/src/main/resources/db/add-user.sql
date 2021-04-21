@@ -1,2 +1,2 @@
-insert into cloud.users (login, nickname, password, spacelimit)
-values (?, ?, ?, ?);
+insert into public.users (login, password, spacelimit)
+values (?, ?, ?);

@@ -1,6 +1,7 @@
 package my.cloud.server.service.impl;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -13,13 +14,16 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import my.cloud.server.factory.Factory;
 import my.cloud.server.service.DbService;
 import my.cloud.server.service.ServerService;
-import my.cloud.server.service.handler.MainInboundHandler;
+import utils.PropertiesReader;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NettyServerService implements ServerService {
 
-    private final int PORT = 8189;
+    private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));
     private DbService db;
     private ChannelFuture future;
+    private ConcurrentHashMap<Channel, String> users;
 
     private static NettyServerService instance;
 
@@ -33,12 +37,26 @@ public class NettyServerService implements ServerService {
     private NettyServerService() {}
 
     @Override
+    public boolean isUserLoggedIn(Channel channel) {
+        return users.containsKey(channel);
+    }
+
+    @Override
+    public void subscribeUser(String login, Channel channel) {
+        users.putIfAbsent(channel, login);
+    }
+
+    @Override
+    public void unsubscribeUser(Channel channel) {
+        users.remove(channel);
+    }
+
+    @Override
     public void startServer() {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         db = Factory.getDbService();
-//        db.addUser("user", "name", "qwerty");
-        System.out.println(db.login("user", "qwerty"));
+        users = new ConcurrentHashMap<>();
 
         try {
             ServerBootstrap b = new ServerBootstrap();

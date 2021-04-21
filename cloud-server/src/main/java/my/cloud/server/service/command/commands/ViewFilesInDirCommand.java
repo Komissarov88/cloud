@@ -1,21 +1,28 @@
 package my.cloud.server.service.command.commands;
 
+import command.Command;
+import command.CommandCode;
+import io.netty.channel.ChannelHandlerContext;
+import my.cloud.server.factory.Factory;
 import my.cloud.server.service.command.CommandService;
 
 import java.io.File;
+import java.util.Arrays;
 
 public class ViewFilesInDirCommand implements CommandService {
 
     @Override
-    public String processCommand(String command) {
-        final int requirementCountCommandParts = 2;
+    public void processCommand(Command command, ChannelHandlerContext ctx) {
+        final int requirementCountCommandParts = 1;
 
-        String[] actualCommandParts = command.split("\\s");
-        if (actualCommandParts.length != requirementCountCommandParts) {
-            return "Command \"" + getCommand() + "\" is not correct";
+        if (command.getArgs().length != requirementCountCommandParts
+                || Factory.getServerService().isUserLoggedIn(ctx.channel())) {
+            ctx.writeAndFlush(new Command(CommandCode.FAIL));
+            return;
         }
 
-        return process(actualCommandParts[1]);
+        String[] args = {process(command.getArgs()[0])};
+        ctx.writeAndFlush(new Command(CommandCode.LS, args));
     }
 
     private String process(String dirPath) {
@@ -43,8 +50,8 @@ public class ViewFilesInDirCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return "ls";
+    public CommandCode getCommand() {
+        return CommandCode.LS;
     }
 
 }

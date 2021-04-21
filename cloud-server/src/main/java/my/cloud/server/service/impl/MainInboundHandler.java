@@ -1,8 +1,9 @@
-package my.cloud.client.service.impl;
+package my.cloud.server.service.impl;
 
 import command.Command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import my.cloud.server.factory.Factory;
 
 import java.util.logging.Logger;
 
@@ -12,14 +13,12 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        logger.info("client connected");
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
-        logger.info(msg.getCode().toString());
-        for (String arg : msg.getArgs()) {
-            System.out.println(arg);
-        }
+        Factory.getCommandDirectoryService().processCommand(msg, ctx);
     }
 
     @Override

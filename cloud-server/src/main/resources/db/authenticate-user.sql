@@ -1,3 +1,3 @@
-select nickname from cloud.users
+select * from public.users
 where login = ?
   and password = ?;

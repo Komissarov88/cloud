@@ -1,12 +1,10 @@
 package my.cloud.server.service.database;
 
 import my.cloud.server.service.DbService;
+import utils.Hash;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,21 +52,20 @@ public class PostgresService implements DbService {
         }
     }
 
-    public String login(String login, String password) {
+    @Override
+    public boolean login(String login, String password) {
         try {
-            MessageDigest msg = MessageDigest.getInstance("MD5");
-            msg.update(password.getBytes());
-            String hash = DatatypeConverter.printHexBinary(msg.digest());
+            String hash = Hash.get(password);
             authStatement.setString(1, login);
             authStatement.setString(2, hash);
             ResultSet resultSet = authStatement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getString("nickname");
+                return true;
             }
-        } catch (NoSuchAlgorithmException | SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "";
+        return false;
     }
 
     @Override
@@ -90,15 +87,12 @@ public class PostgresService implements DbService {
     @Override
     public boolean addUser(String login, String nickname, String password) {
         try {
-            MessageDigest msg = MessageDigest.getInstance("MD5");
-            msg.update(password.getBytes());
-            String hash = DatatypeConverter.printHexBinary(msg.digest());
+            String hash = Hash.get(password);
             addUserStatement.setString(1, login);
-            addUserStatement.setString(2, nickname);
-            addUserStatement.setString(3, hash);
-            addUserStatement.setInt(4, 1073741824);
+            addUserStatement.setString(2, hash);
+            addUserStatement.setInt(3, 1073741824);
             addUserStatement.executeQuery();
-        } catch (NoSuchAlgorithmException | SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
