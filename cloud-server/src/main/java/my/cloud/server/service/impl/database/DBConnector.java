@@ -1,4 +1,4 @@
-package my.cloud.server.service.database;
+package my.cloud.server.service.impl.database;
 
 import utils.PropertiesReader;
 
@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DbConnector {
+public class DBConnector {
 
     private static int PORT = Integer.parseInt(PropertiesReader.getProperty("db.port"));
     private static String HOST = PropertiesReader.getProperty("db.address");
@@ -16,7 +16,7 @@ public class DbConnector {
 
     private Connection connection;
 
-    public DbConnector() {
+    public DBConnector() {
         connect();
     }
 

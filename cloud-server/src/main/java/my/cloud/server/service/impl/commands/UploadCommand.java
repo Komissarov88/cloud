@@ -1,12 +1,12 @@
-package my.cloud.server.service.commands;
+package my.cloud.server.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
+import command.domain.Command;
+import command.domain.CommandCode;
 import handler.FileReadHandler;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import command.CommandService;
-import my.cloud.server.service.files.FileJob;
+import command.service.CommandService;
+import my.cloud.server.service.impl.files.FileJob;
 import utils.Logger;
 
 import java.nio.file.Path;
@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 /**
  * Called from upload channel with authenticate key
  */
-public class Upload implements CommandService {
+public class UploadCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {

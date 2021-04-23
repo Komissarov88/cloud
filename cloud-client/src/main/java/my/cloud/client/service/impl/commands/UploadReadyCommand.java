@@ -1,8 +1,8 @@
-package my.cloud.client.commands;
+package my.cloud.client.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
-import command.CommandService;
+import command.domain.Command;
+import command.domain.CommandCode;
+import command.service.CommandService;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,7 +16,7 @@ import java.io.IOException;
 /**
  * Called when server ready to receive ChunkedWriteHandler data
  */
-public class UploadReady implements CommandService {
+public class UploadReadyCommand implements CommandService {
 
     private ChunkedFile getChunkedFile(File file) {
         try {

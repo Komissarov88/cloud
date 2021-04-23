@@ -1,15 +1,15 @@
-package my.cloud.client.commands;
+package my.cloud.client.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
-import command.CommandService;
+import command.domain.Command;
+import command.domain.CommandCode;
+import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
 import utils.Logger;
 
 /**
  * Called on successful authentication
  */
-public class Ok implements CommandService {
+public class SuccessResponseCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -18,7 +18,7 @@ public class Ok implements CommandService {
 
     @Override
     public CommandCode getCommand() {
-        return CommandCode.OK;
+        return CommandCode.SUCCESS;
     }
 
 }

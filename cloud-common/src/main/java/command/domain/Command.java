@@ -1,4 +1,4 @@
-package command;
+package command.domain;
 
 import java.io.Serializable;
 import java.util.Arrays;

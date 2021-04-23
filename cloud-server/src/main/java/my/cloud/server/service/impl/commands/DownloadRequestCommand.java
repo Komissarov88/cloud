@@ -1,10 +1,10 @@
-package my.cloud.server.service.commands;
+package my.cloud.server.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
+import command.domain.Command;
+import command.domain.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import command.CommandService;
+import command.service.CommandService;
 import utils.Logger;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.io.File;
 /**
  * Called when client want to download file
  */
-public class DownloadRequest implements CommandService {
+public class DownloadRequestCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {

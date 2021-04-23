@@ -1,6 +1,6 @@
 package my.cloud.client.service;
 
-import command.Command;
+import command.domain.Command;
 
 import java.io.File;
 import java.nio.file.Path;

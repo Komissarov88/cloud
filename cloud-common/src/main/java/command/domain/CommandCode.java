@@ -1,0 +1,6 @@
+package command.domain;
+
+public enum CommandCode {
+    AUTH, LS, SUCCESS, FAIL, DOWNLOAD, UPLOAD, DOWNLOAD_REQUEST, UPLOAD_REQUEST,
+    UPLOAD_READY, DOWNLOAD_READY
+}

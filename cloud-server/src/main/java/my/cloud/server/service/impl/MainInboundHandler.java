@@ -1,13 +1,13 @@
 package my.cloud.server.service.impl;
 
-import command.Command;
+import command.domain.Command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import my.cloud.server.factory.Factory;
 import utils.Logger;
 
 /**
- * Translates incoming messages to command dictionary service
+ * Translates incoming messages to command dictionary command.service
  */
 public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 

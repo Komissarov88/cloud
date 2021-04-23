@@ -1,6 +1,6 @@
-package my.cloud.server.service.database;
+package my.cloud.server.service.impl.database;
 
-import my.cloud.server.service.DbService;
+import my.cloud.server.service.DBService;
 import utils.Hash;
 
 import java.io.BufferedInputStream;
@@ -9,14 +9,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PostgresService implements DbService {
+public class PostgresService implements DBService {
 
     private static PostgresService dbService;
-    private DbConnector connector;
+    private DBConnector connector;
     private PreparedStatement addUserStatement;
     private PreparedStatement authStatement;
 
-    public static DbService getInstance() {
+    public static DBService getInstance() {
         if (dbService == null) {
             dbService = new PostgresService();
         }
@@ -41,7 +41,7 @@ public class PostgresService implements DbService {
     }
 
     private PostgresService() {
-        connector = new DbConnector();
+        connector = new DBConnector();
         try {
             addUserStatement = connector.getConnection().prepareStatement(
                     getResourceContent("/db/add-user.sql"));

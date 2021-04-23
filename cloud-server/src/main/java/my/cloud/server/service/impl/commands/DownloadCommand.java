@@ -1,14 +1,14 @@
-package my.cloud.server.service.commands;
+package my.cloud.server.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
+import command.domain.Command;
+import command.domain.CommandCode;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import my.cloud.server.factory.Factory;
-import command.CommandService;
-import my.cloud.server.service.files.FileJob;
+import command.service.CommandService;
+import my.cloud.server.service.impl.files.FileJob;
 import utils.Logger;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import java.io.IOException;
 /**
  * Called from download channel with authenticate key
  */
-public class Download implements CommandService {
+public class DownloadCommand implements CommandService {
 
     private ChunkedFile getChunkedFile(File file) {
         try {

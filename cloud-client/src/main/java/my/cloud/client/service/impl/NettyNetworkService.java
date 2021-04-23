@@ -1,7 +1,7 @@
 package my.cloud.client.service.impl;
 
-import command.Command;
-import command.CommandCode;
+import command.domain.Command;
+import command.domain.CommandCode;
 import my.cloud.client.service.NetworkService;
 
 import java.io.File;

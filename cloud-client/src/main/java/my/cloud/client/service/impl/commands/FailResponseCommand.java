@@ -1,15 +1,15 @@
-package my.cloud.client.commands;
+package my.cloud.client.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
-import command.CommandService;
+import command.domain.Command;
+import command.domain.CommandCode;
+import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
 import utils.Logger;
 
 /**
  * Called when something goes wrong
  */
-public class Fail implements CommandService {
+public class FailResponseCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {

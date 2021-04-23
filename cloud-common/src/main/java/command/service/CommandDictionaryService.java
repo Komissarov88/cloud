@@ -1,5 +1,6 @@
-package command;
+package command.service;
 
+import command.domain.Command;
 import io.netty.channel.ChannelHandlerContext;
 
 /**

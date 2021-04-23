@@ -1,8 +1,8 @@
-package my.cloud.client.commands;
+package my.cloud.client.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
-import command.CommandService;
+import command.domain.Command;
+import command.domain.CommandCode;
+import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.service.impl.CloudConnection;
 import utils.Logger;
@@ -10,7 +10,7 @@ import utils.Logger;
 /**
  * Called when server sends client authentication key for upload channel
  */
-public class UploadRequest implements CommandService {
+public class UploadRequestCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {

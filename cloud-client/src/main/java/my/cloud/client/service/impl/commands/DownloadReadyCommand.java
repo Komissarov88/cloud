@@ -1,8 +1,8 @@
-package my.cloud.client.commands;
+package my.cloud.client.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
-import command.CommandService;
+import command.domain.Command;
+import command.domain.CommandCode;
+import command.service.CommandService;
 import handler.FileReadHandler;
 import io.netty.channel.ChannelHandlerContext;
 import utils.Logger;
@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 /**
  * Called right before ChunkedWriteHandler on server side starts working
  */
-public class DownloadReady implements CommandService {
+public class DownloadReadyCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {

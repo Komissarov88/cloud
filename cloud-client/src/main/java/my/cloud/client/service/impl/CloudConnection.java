@@ -1,6 +1,6 @@
 package my.cloud.client.service.impl;
 
-import command.Command;
+import command.domain.Command;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;

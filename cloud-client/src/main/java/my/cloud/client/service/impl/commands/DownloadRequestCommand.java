@@ -1,8 +1,8 @@
-package my.cloud.client.commands;
+package my.cloud.client.service.impl.commands;
 
-import command.Command;
-import command.CommandCode;
-import command.CommandService;
+import command.domain.Command;
+import command.domain.CommandCode;
+import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.service.impl.CloudConnection;
 import utils.Logger;
@@ -12,7 +12,7 @@ import java.io.File;
 /**
  * Called when server sends key to authenticate download channel
  */
-public class DownloadRequest implements CommandService {
+public class DownloadRequestCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {

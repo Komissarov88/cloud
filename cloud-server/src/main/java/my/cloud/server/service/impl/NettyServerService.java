@@ -9,7 +9,7 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.DbService;
+import my.cloud.server.service.DBService;
 import my.cloud.server.service.ServerService;
 import utils.PropertiesReader;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NettyServerService implements ServerService {
 
     private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));
-    private DbService db;
+    private DBService db;
     private ChannelFuture future;
     private ConcurrentHashMap<Channel, String> users;
 
