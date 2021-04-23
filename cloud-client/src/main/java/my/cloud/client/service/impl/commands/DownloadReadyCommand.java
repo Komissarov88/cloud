@@ -9,6 +9,7 @@ import utils.Logger;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Consumer;
 
 /**
  * Called right before ChunkedWriteHandler on server side starts working
@@ -34,5 +35,4 @@ public class DownloadReadyCommand implements CommandService {
     public CommandCode getCommand() {
         return CommandCode.DOWNLOAD_READY;
     }
-
 }

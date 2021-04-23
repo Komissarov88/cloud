@@ -41,7 +41,7 @@ public class FileBrowser implements Initializable {
      * Download file from ./data dir to ./
      */
     public void download(ActionEvent actionEvent) {
-        networkService.downloadFile(Paths.get("./data", commandTextField.getText().trim()));
+        networkService.downloadFile(Paths.get(commandTextField.getText().trim()));
         commandTextField.clear();
         commandTextField.requestFocus();
     }

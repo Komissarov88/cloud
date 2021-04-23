@@ -4,7 +4,7 @@ import command.service.CommandDictionaryService;
 import command.service.CommandService;
 import command.service.impl.CommandDictionaryServiceImpl;
 import my.cloud.client.service.NetworkService;
-import my.cloud.client.service.impl.NettyNetworkService;
+import my.cloud.client.service.impl.NettyNetworkServiceImpl;
 import utils.ClassInstanceSetBuilder;
 
 public class Factory {
@@ -12,7 +12,7 @@ public class Factory {
     private static CommandDictionaryService commandDictionaryService;
 
     public static NetworkService getNetworkService() {
-        return NettyNetworkService.getInstance();
+        return NettyNetworkServiceImpl.getInstance();
     }
 
     public static CommandDictionaryService getCommandDictionaryService() {

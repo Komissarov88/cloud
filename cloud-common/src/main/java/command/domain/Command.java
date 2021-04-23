@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Main exchange unit between client and server
+ * Main exchange dto between client and server
  */
 public class Command implements Serializable {
 
@@ -36,9 +36,6 @@ public class Command implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(code.toString()).append(" : ");
-        sb.append(Arrays.toString(args)).append(System.lineSeparator());
-        return sb.toString();
+        return code.toString() + " : " + Arrays.toString(args);
     }
 }

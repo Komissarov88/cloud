@@ -3,23 +3,33 @@ package my.cloud.client.service.impl;
 import command.domain.Command;
 import command.domain.CommandCode;
 import my.cloud.client.service.NetworkService;
+import utils.PropertiesReader;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class NettyNetworkService implements NetworkService {
+public class NettyNetworkServiceImpl implements NetworkService {
 
-    private static NettyNetworkService instance;
+    private static NettyNetworkServiceImpl instance;
     private CloudConnection mainConnection;
+    private String login;
+    private ExecutorService executorService;
+
+    private final Path clientDataRoot = Paths.get(PropertiesReader.getProperty("client.data.root.path"));
+    private final int maximumConnections = Integer.parseInt(
+            PropertiesReader.getProperty("client.connections.count"));
 
     public static NetworkService getInstance() {
         if (instance == null) {
-            instance = new NettyNetworkService();
+            instance = new NettyNetworkServiceImpl();
         }
         return instance;
     }
 
-    private NettyNetworkService() {
+    private NettyNetworkServiceImpl() {
     }
 
     @Override
@@ -27,7 +37,9 @@ public class NettyNetworkService implements NetworkService {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
+        this.login = login;
         mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
+        executorService = Executors.newFixedThreadPool(maximumConnections);
         new Thread(mainConnection).start();
     }
 
@@ -59,6 +71,7 @@ public class NettyNetworkService implements NetworkService {
         if (mainConnection != null) {
             mainConnection.disconnect();
         }
+        executorService.shutdown();
     }
 
     public boolean isConnected() {
@@ -67,4 +80,24 @@ public class NettyNetworkService implements NetworkService {
         }
         return mainConnection.isConnected();
     }
+
+    @Override
+    public String getLogin() {
+        if (!isConnected()) {
+            login = "";
+        }
+        return login;
+    }
+
+    @Override
+    public void submitConnection(Runnable connection) {
+        executorService.submit(connection);
+    }
+
+    @Override
+    public Path getUserCurrentPath() {
+        return Paths.get("./");
+    }
+
+
 }

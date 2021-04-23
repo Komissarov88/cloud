@@ -6,13 +6,42 @@ import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
 import utils.Logger;
+import utils.PathUtils;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Called when client want to download file
  */
 public class DownloadRequestCommand implements CommandService {
+
+    private void singleFileRequest(ChannelHandlerContext ctx, File file) {
+        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+        String[] response;
+        response = new String[]{
+                String.valueOf(file.length()),
+                Factory.getFileJobService().add(file, ctx.channel()),
+                file.getName()
+        };
+        ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_REQUEST, response));
+    }
+
+    private void folderRequest(ChannelHandlerContext ctx, File file) {
+        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+        List<File> files = PathUtils.getFilesList(file.toPath());
+        long size = PathUtils.getSize(files);
+        String[] response = new String[files.size() * 2 + 1];
+        response[0] = String.valueOf(size);
+        int i = 1;
+        for (File f : files) {
+            response[i++] = Factory.getFileJobService().add(f, ctx.channel());
+            response[i++] =file.getParentFile().toPath().relativize(f.toPath()).toString();
+        }
+        ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_REQUEST, response));
+    }
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -25,16 +54,20 @@ public class DownloadRequestCommand implements CommandService {
             return;
         }
 
-        File file = new File(command.getArgs()[0]);
-        if (file.canRead()) {
-            String[] response = {
-                    Factory.getFileJobService().add(file, ctx.channel()),
-                    file.getName(),
-                    String.valueOf(file.length())
-            };
-            ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_REQUEST, response));
+        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+        File requestFile = Paths.get(rootUserPath.toString(), command.getArgs()[0]).toFile();
+
+        if (!PathUtils.isPathsParentAndChild(rootUserPath, requestFile.toPath())) {
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
+            return;
+        }
+
+        if (requestFile.isFile() && requestFile.canRead()) {
+            singleFileRequest(ctx, requestFile);
+        } else if (requestFile.isDirectory()) {
+            folderRequest(ctx, requestFile);
         } else {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file", requestFile.toString()));
         }
     }
 

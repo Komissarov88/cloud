@@ -4,10 +4,11 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
+import my.cloud.client.factory.Factory;
 import my.cloud.client.service.impl.CloudConnection;
 import utils.Logger;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Called when server sends key to authenticate download channel
@@ -19,21 +20,23 @@ public class DownloadRequestCommand implements CommandService {
         Logger.info(command.toString());
 
         if (command.getArgs() == null
-                || command.getArgs().length != 3) {
+                || command.getArgs().length < 3) {
             Logger.warning("wrong arguments");
             return;
         }
 
-        String key = command.getArgs()[0];
-        String fileName = command.getArgs()[1];
-        long size = Long.parseLong(command.getArgs()[2]);
-        File file = new File("./" + fileName);
-        if (file.getParentFile().getFreeSpace() > size) {
-            Command initialCommand = new Command(CommandCode.DOWNLOAD, key, file.toString());
-            CloudConnection downloadConnection = new CloudConnection(initialCommand);
-            new Thread(downloadConnection).start();
-        } else {
-            Logger.warning("no free space");
+        Path root = Factory.getNetworkService().getUserCurrentPath();
+        long totalSize = Long.parseLong(command.getArgs()[0]);
+        if (totalSize > root.toFile().getFreeSpace()) {
+            Logger.warning("not enough free space");
+            return;
+        }
+
+        for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
+            String authKey = command.getArgs()[i];
+            Path fileName = root.resolve(command.getArgs()[i+1]);
+            Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, fileName.toString());
+            Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand));
         }
     }
 

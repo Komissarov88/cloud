@@ -12,4 +12,7 @@ public interface NetworkService {
     void downloadFile(Path file);
     void closeConnection();
     void connect(String login, String password);
+    String getLogin();
+    Path getUserCurrentPath();
+    void submitConnection(Runnable connection);
 }

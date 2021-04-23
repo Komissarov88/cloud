@@ -6,7 +6,7 @@ import my.cloud.server.service.*;
 import my.cloud.server.service.impl.database.PostgresService;
 import command.service.impl.CommandDictionaryServiceImpl;
 import my.cloud.server.service.impl.files.FileJobService;
-import my.cloud.server.service.impl.NettyServerService;
+import my.cloud.server.service.impl.NettyServerServiceImpl;
 import utils.ClassInstanceSetBuilder;
 
 public class Factory {
@@ -14,7 +14,7 @@ public class Factory {
     private static CommandDictionaryService commandDictionaryService;
 
     public static ServerService getServerService() {
-        return NettyServerService.getInstance();
+        return NettyServerServiceImpl.getInstance();
     }
 
     public static DBService getDbService() {

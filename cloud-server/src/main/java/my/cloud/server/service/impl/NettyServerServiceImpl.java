@@ -13,25 +13,28 @@ import my.cloud.server.service.DBService;
 import my.cloud.server.service.ServerService;
 import utils.PropertiesReader;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NettyServerService implements ServerService {
+public class NettyServerServiceImpl implements ServerService {
 
     private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));
+    private final Path serverDataRoot = Paths.get(PropertiesReader.getProperty("server.data.root.path"));
     private DBService db;
     private ChannelFuture future;
     private ConcurrentHashMap<Channel, String> users;
 
-    private static NettyServerService instance;
+    private static NettyServerServiceImpl instance;
 
     public static ServerService getInstance() {
         if (instance == null) {
-            instance = new NettyServerService();
+            instance = new NettyServerServiceImpl();
         }
         return instance;
     }
 
-    private NettyServerService() {}
+    private NettyServerServiceImpl() {}
 
     private void defaultPipeline(ChannelPipeline pipeline) {
         pipeline.addLast("ObjectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
@@ -42,6 +45,14 @@ public class NettyServerService implements ServerService {
     @Override
     public boolean isUserLoggedIn(Channel channel) {
         return users.containsKey(channel);
+    }
+
+    @Override
+    public Path getUserRootPath(Channel channel) {
+        if(!isUserLoggedIn(channel)) {
+            return null;
+        }
+        return serverDataRoot.resolve(Paths.get(users.get(channel)));
     }
 
     @Override
