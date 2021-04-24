@@ -22,8 +22,7 @@
         <server.address>localhost</server.address>
         <server.port>8189</server.port>
         <server.data.root.path>server-storage</server.data.root.path>
-        <client.data.root.path>client-storage</client.data.root.path>
-        <client.connections.count>4</client.connections.count>
+        <client.connections.maximum>5</client.connections.maximum>
         <db.address>192.168.1.13</db.address>
         <db.port>5435</db.port>
         <db.name>cloud</db.name>

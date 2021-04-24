@@ -3,11 +3,11 @@ package my.cloud.client.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import my.cloud.client.factory.Factory;
 import utils.Logger;
 
 import java.io.File;
@@ -38,7 +38,8 @@ public class UploadReadyCommand implements CommandService {
         }
 
         ChunkedFile cf;
-        if ((cf = getChunkedFile(new File(command.getArgs()[0]))) == null) {
+        File file = Factory.getFileJobService().remove(command.getArgs()[0]);
+        if (file == null || (cf = getChunkedFile(file)) == null) {
             Logger.warning("cant read file");
             ctx.close();
             return;
@@ -46,12 +47,9 @@ public class UploadReadyCommand implements CommandService {
 
         ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
         ctx.pipeline().removeLast();
-        ctx.writeAndFlush(cf).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                Logger.info("upload complete");
-                ctx.close();
-            }
+        ctx.writeAndFlush(cf).addListener((ChannelFutureListener) future -> {
+            Logger.info("upload complete");
+            ctx.close();
         });
 
     }

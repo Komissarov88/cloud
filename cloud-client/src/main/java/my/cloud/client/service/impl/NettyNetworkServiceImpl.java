@@ -2,12 +2,15 @@ package my.cloud.client.service.impl;
 
 import command.domain.Command;
 import command.domain.CommandCode;
+import my.cloud.client.factory.Factory;
 import my.cloud.client.service.NetworkService;
+import utils.PathUtils;
 import utils.PropertiesReader;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,10 +20,10 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private CloudConnection mainConnection;
     private String login;
     private ExecutorService executorService;
+    private Path currentPath = Paths.get("./");
 
-    private final Path clientDataRoot = Paths.get(PropertiesReader.getProperty("client.data.root.path"));
     private final int maximumConnections = Integer.parseInt(
-            PropertiesReader.getProperty("client.connections.count"));
+            PropertiesReader.getProperty("client.connections.maximum"));
 
     public static NetworkService getInstance() {
         if (instance == null) {
@@ -40,7 +43,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
         this.login = login;
         mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
         executorService = Executors.newFixedThreadPool(maximumConnections);
-        new Thread(mainConnection).start();
+        submitConnection(mainConnection);
     }
 
     @Override
@@ -53,9 +56,16 @@ public class NettyNetworkServiceImpl implements NetworkService {
         if (!file.canRead()) {
             return;
         }
-        String[] args = {file.toString(),
-                String.valueOf(file.length())
-        };
+        List<File> files = PathUtils.getFilesList(file.toPath());
+        long size = PathUtils.getSize(files);
+
+        String[] args = new String[files.size() * 2 + 1];
+        args[0] = String.valueOf(size);
+        int i = 1;
+        for (File f : files) {
+            args[i++] = Factory.getFileJobService().add(f, mainConnection.getChannel());
+            args[i++] = file.toPath().getFileName().resolve(file.toPath().relativize(f.toPath())).toString();
+        }
         mainConnection.sendCommand(new Command(CommandCode.UPLOAD_REQUEST, args));
     }
 
@@ -95,9 +105,16 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public Path getUserCurrentPath() {
-        return Paths.get("./");
+    public Path getCurrentPath() {
+        return currentPath;
     }
 
-
+    @Override
+    public void setCurrentPath(Path path) {
+        if (path.toFile().exists()) {
+            currentPath = path;
+        } else {
+            throw new IllegalArgumentException("path does not exist");
+        }
+    }
 }

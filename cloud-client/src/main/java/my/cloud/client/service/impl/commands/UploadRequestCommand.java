@@ -4,6 +4,7 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
+import my.cloud.client.factory.Factory;
 import my.cloud.client.service.impl.CloudConnection;
 import utils.Logger;
 
@@ -28,7 +29,7 @@ public class UploadRequestCommand implements CommandService {
         };
 
         CloudConnection uploadConnection = new CloudConnection(new Command(CommandCode.UPLOAD, args));
-        new Thread(uploadConnection).start();
+        Factory.getNetworkService().submitConnection(uploadConnection);
     }
 
     @Override

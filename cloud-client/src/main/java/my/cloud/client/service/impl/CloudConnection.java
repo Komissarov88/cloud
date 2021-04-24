@@ -2,10 +2,7 @@ package my.cloud.client.service.impl;
 
 import command.domain.Command;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -82,5 +79,9 @@ public class CloudConnection implements Runnable{
             return false;
         }
         return socketChannel.isOpen();
+    }
+
+    public Channel getChannel() {
+        return socketChannel;
     }
 }

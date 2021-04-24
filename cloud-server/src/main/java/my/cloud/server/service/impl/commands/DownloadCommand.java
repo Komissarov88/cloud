@@ -8,7 +8,6 @@ import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
-import my.cloud.server.service.impl.files.FileJob;
 import utils.Logger;
 
 import java.io.File;
@@ -42,10 +41,10 @@ public class DownloadCommand implements CommandService {
         String key = command.getArgs()[0];
         String clientPath = command.getArgs()[1];
 
-        FileJob job = Factory.getFileJobService().remove(key);
+        File job = Factory.getFileJobService().remove(key);
         if (job != null) {
             ChunkedFile cf;
-            if ((cf = getChunkedFile(job.file)) == null) {
+            if ((cf = getChunkedFile(job)) == null) {
                 ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file"));
                 ctx.close();
                 return;

@@ -18,19 +18,7 @@ import java.util.List;
  */
 public class DownloadRequestCommand implements CommandService {
 
-    private void singleFileRequest(ChannelHandlerContext ctx, File file) {
-        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
-        String[] response;
-        response = new String[]{
-                String.valueOf(file.length()),
-                Factory.getFileJobService().add(file, ctx.channel()),
-                file.getName()
-        };
-        ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_REQUEST, response));
-    }
-
-    private void folderRequest(ChannelHandlerContext ctx, File file) {
-        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+    private void sendRequest(ChannelHandlerContext ctx, File file) {
         List<File> files = PathUtils.getFilesList(file.toPath());
         long size = PathUtils.getSize(files);
         String[] response = new String[files.size() * 2 + 1];
@@ -38,7 +26,7 @@ public class DownloadRequestCommand implements CommandService {
         int i = 1;
         for (File f : files) {
             response[i++] = Factory.getFileJobService().add(f, ctx.channel());
-            response[i++] =file.getParentFile().toPath().relativize(f.toPath()).toString();
+            response[i++] = file.getParentFile().toPath().relativize(f.toPath()).toString();
         }
         ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_REQUEST, response));
     }
@@ -62,10 +50,8 @@ public class DownloadRequestCommand implements CommandService {
             return;
         }
 
-        if (requestFile.isFile() && requestFile.canRead()) {
-            singleFileRequest(ctx, requestFile);
-        } else if (requestFile.isDirectory()) {
-            folderRequest(ctx, requestFile);
+        if (requestFile.canRead()) {
+            sendRequest(ctx, requestFile);
         } else {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file", requestFile.toString()));
         }

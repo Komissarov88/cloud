@@ -2,10 +2,11 @@ package my.cloud.server.factory;
 
 import command.service.CommandDictionaryService;
 import command.service.CommandService;
+import files.service.FileJobService;
+import files.service.impl.FileJobServiceImpl;
 import my.cloud.server.service.*;
 import my.cloud.server.service.impl.database.PostgresService;
 import command.service.impl.CommandDictionaryServiceImpl;
-import my.cloud.server.service.impl.files.FileJobService;
 import my.cloud.server.service.impl.NettyServerServiceImpl;
 import utils.ClassInstanceSetBuilder;
 
@@ -30,6 +31,6 @@ public class Factory {
     }
 
     public static FileJobService getFileJobService() {
-        return FileJobService.getInstance();
+        return FileJobServiceImpl.getInstance();
     }
 }

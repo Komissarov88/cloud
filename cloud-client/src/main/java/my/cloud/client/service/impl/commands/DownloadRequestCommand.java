@@ -25,7 +25,7 @@ public class DownloadRequestCommand implements CommandService {
             return;
         }
 
-        Path root = Factory.getNetworkService().getUserCurrentPath();
+        Path root = Factory.getNetworkService().getCurrentPath();
         long totalSize = Long.parseLong(command.getArgs()[0]);
         if (totalSize > root.toFile().getFreeSpace()) {
             Logger.warning("not enough free space");

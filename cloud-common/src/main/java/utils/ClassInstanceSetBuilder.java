@@ -11,7 +11,7 @@ public class ClassInstanceSetBuilder {
 
     private ClassInstanceSetBuilder(){}
 
-    private static <T> T newInstance(Class<? extends T> type) {
+    private static <T> T newTargetClassInstance(Class<? extends T> type) {
         T instance = null;
         try {
             instance = type.newInstance();
@@ -30,7 +30,7 @@ public class ClassInstanceSetBuilder {
         Set<T> set = new HashSet<>(classes.size());
 
         for (Class<? extends T> aClass : classes) {
-            set.add(newInstance(aClass));
+            set.add(newTargetClassInstance(aClass));
         }
         return set;
     }

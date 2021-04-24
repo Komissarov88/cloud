@@ -1,5 +1,6 @@
-package my.cloud.server.service.impl.files;
+package files.service.impl;
 
+import files.service.FileJobService;
 import io.netty.channel.Channel;
 import utils.Hash;
 
@@ -10,35 +11,50 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Manages FileJobs, used to authenticate upload/download channels
  */
-public class FileJobService {
+public class FileJobServiceImpl implements FileJobService {
 
-    private static FileJobService fileJobService;
+    private static FileJobServiceImpl fileJobService;
     private ConcurrentHashMap<String, FileJob> jobs;
 
-    private FileJobService() {
+    private FileJobServiceImpl() {
         jobs = new ConcurrentHashMap<>();
     }
 
-    public static FileJobService getInstance() {
+    public static FileJobServiceImpl getInstance() {
         if (fileJobService == null) {
-            fileJobService = new FileJobService();
+            fileJobService = new FileJobServiceImpl();
         }
         return fileJobService;
     }
 
+    private static class FileJob {
+
+        public final Channel channel;
+        public final File file;
+
+        public FileJob(Channel channel, File file) {
+            this.channel = channel;
+            this.file = file;
+        }
+    }
+
+    @Override
     public String add(File file, Channel channel) {
         String hash = Hash.get(channel.toString() + file);
         jobs.putIfAbsent(hash, new FileJob(channel, file));
         return hash;
     }
 
-    public FileJob remove(String key) {
-        return jobs.remove(key);
+    @Override
+    public File remove(String key) {
+        FileJob fj = jobs.remove(key);
+        return fj == null ? null : fj.file;
     }
 
+    @Override
     public void clean() {
         for (Map.Entry<String, FileJob> stringFileJobEntry : jobs.entrySet()) {
-            if (!stringFileJobEntry.getValue().userChannel.isOpen()) {
+            if (!stringFileJobEntry.getValue().channel.isOpen()) {
                 jobs.remove(stringFileJobEntry.getKey());
             }
         }

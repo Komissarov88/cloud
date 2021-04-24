@@ -3,6 +3,8 @@ package my.cloud.client.factory;
 import command.service.CommandDictionaryService;
 import command.service.CommandService;
 import command.service.impl.CommandDictionaryServiceImpl;
+import files.service.FileJobService;
+import files.service.impl.FileJobServiceImpl;
 import my.cloud.client.service.NetworkService;
 import my.cloud.client.service.impl.NettyNetworkServiceImpl;
 import utils.ClassInstanceSetBuilder;
@@ -21,5 +23,9 @@ public class Factory {
                             "my.cloud.client.service.impl.commands", CommandService.class));
         }
         return commandDictionaryService;
+    }
+
+    public static FileJobService getFileJobService() {
+        return FileJobServiceImpl.getInstance();
     }
 }

@@ -6,9 +6,9 @@ import handler.FileReadHandler;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
-import my.cloud.server.service.impl.files.FileJob;
 import utils.Logger;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -28,16 +28,16 @@ public class UploadCommand implements CommandService {
         }
 
         String authKey = command.getArgs()[0];
-        String clientSidePath = command.getArgs()[1];
+        String clientJobKey = command.getArgs()[1];
 
-        FileJob job = Factory.getFileJobService().remove(authKey);
+        File job = Factory.getFileJobService().remove(authKey);
         if (job != null) {
 
             try {
-                Path path = Paths.get(job.file.getPath());
+                Path path = Paths.get(job.getPath());
                 ctx.pipeline().replace(
                         "ObjectDecoder", "Reader", new FileReadHandler(path));
-                ctx.writeAndFlush(new Command(CommandCode.UPLOAD_READY, clientSidePath)).sync();
+                ctx.writeAndFlush(new Command(CommandCode.UPLOAD_READY, clientJobKey)).sync();
                 ctx.pipeline().removeLast();
             } catch (InterruptedException e) {
                 e.printStackTrace();

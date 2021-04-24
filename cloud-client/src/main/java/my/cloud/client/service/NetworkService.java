@@ -13,6 +13,7 @@ public interface NetworkService {
     void closeConnection();
     void connect(String login, String password);
     String getLogin();
-    Path getUserCurrentPath();
+    Path getCurrentPath();
+    void setCurrentPath(Path path);
     void submitConnection(Runnable connection);
 }

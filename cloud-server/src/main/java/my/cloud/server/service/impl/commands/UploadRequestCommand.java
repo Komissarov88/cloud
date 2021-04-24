@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
 import utils.Logger;
+import utils.PathUtils;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -21,22 +22,34 @@ public class UploadRequestCommand implements CommandService {
         Logger.info(command.toString());
 
         if (command.getArgs() == null
-                || command.getArgs().length != 2
+                || command.getArgs().length < 3
                 || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
             return;
         }
-        Path path = Paths.get(command.getArgs()[0]);
-        long size = Long.parseLong(command.getArgs()[1]);
-        File file = new File("./data/" + path.getFileName());
-        if (true) { // TODO free space check
-            String[] response = {
-                    Factory.getFileJobService().add(file, ctx.channel()),
-                    command.getArgs()[0]
-            };
-            ctx.writeAndFlush(new Command(CommandCode.UPLOAD_REQUEST, response));
-        } else {
+
+        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+
+        long size = Long.parseLong(command.getArgs()[0]);
+        if (size > rootUserPath.toFile().getFreeSpace()) {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "no free space"));
+            return;
+        }
+
+        for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
+            File file = Paths.get(rootUserPath.toString(), command.getArgs()[i+1]).toFile();
+
+            if (!PathUtils.isPathsParentAndChild(rootUserPath, file.toPath())) {
+                ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
+                continue;
+            }
+
+            String clientKey = command.getArgs()[i];
+            String uploadChannelAuthKey = Factory.getFileJobService().add(file, ctx.channel());
+
+            ctx.writeAndFlush(new Command(CommandCode.UPLOAD_REQUEST,
+                    uploadChannelAuthKey,
+                    clientKey));
         }
     }
 
