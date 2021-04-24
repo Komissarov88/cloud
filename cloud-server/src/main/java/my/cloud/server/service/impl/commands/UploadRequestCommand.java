@@ -31,7 +31,7 @@ public class UploadRequestCommand implements CommandService {
         Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
 
         long size = Long.parseLong(command.getArgs()[0]);
-        if (size > rootUserPath.toFile().getFreeSpace()) {
+        if (size > Factory.getServerService().getUserFreeSpace(ctx.channel())) {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "no free space"));
             return;
         }

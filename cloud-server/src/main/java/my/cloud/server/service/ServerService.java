@@ -12,4 +12,5 @@ public interface ServerService {
     Path getUserRootPath(Channel channel);
     void subscribeUser(String login, Channel channel);
     void unsubscribeUser(Channel channel);
+    long getUserFreeSpace(Channel channel);
 }

@@ -1,7 +1,9 @@
 package my.cloud.server.service.impl.database;
 
+import my.cloud.server.factory.Factory;
 import my.cloud.server.service.DBService;
 import utils.Hash;
+import utils.PropertiesReader;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -15,6 +17,7 @@ public class PostgresService implements DBService {
     private DBConnector connector;
     private PreparedStatement addUserStatement;
     private PreparedStatement authStatement;
+    private PreparedStatement spaceLimitStatement;
 
     public static DBService getInstance() {
         if (dbService == null) {
@@ -47,6 +50,8 @@ public class PostgresService implements DBService {
                     getResourceContent("/db/add-user.sql"));
             authStatement = connector.getConnection().prepareStatement(
                     getResourceContent("/db/authenticate-user.sql"));
+            spaceLimitStatement = connector.getConnection().prepareStatement(
+                    getResourceContent("/db/get-space-limit.sql"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -69,7 +74,16 @@ public class PostgresService implements DBService {
     }
 
     @Override
-    public long getSpaceAvailable(String login) {
+    public long getSpaceLimit(String login) {
+        try {
+            spaceLimitStatement.setString(1, login);
+            ResultSet resultSet = spaceLimitStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getLong(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -78,6 +92,7 @@ public class PostgresService implements DBService {
         try {
             addUserStatement.close();
             authStatement.close();
+            spaceLimitStatement.close();
             connector.closeConnection();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -86,11 +101,12 @@ public class PostgresService implements DBService {
 
     @Override
     public boolean addUser(String login, String nickname, String password) {
+        long spaceLimit = 1073741824 * Long.parseLong(PropertiesReader.getProperty("user.default.space.gb"));
         try {
             String hash = Hash.get(password);
             addUserStatement.setString(1, login);
             addUserStatement.setString(2, hash);
-            addUserStatement.setInt(3, 1073741824);
+            addUserStatement.setLong(3, spaceLimit);
             addUserStatement.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();

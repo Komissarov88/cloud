@@ -11,10 +11,13 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import my.cloud.server.factory.Factory;
 import my.cloud.server.service.DBService;
 import my.cloud.server.service.ServerService;
+import utils.PathUtils;
 import utils.PropertiesReader;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NettyServerServiceImpl implements ServerService {
@@ -91,6 +94,15 @@ public class NettyServerServiceImpl implements ServerService {
             workerGroup.shutdownGracefully();
             db.closeConnection();
         }
+    }
+
+    @Override
+    public long getUserFreeSpace(Channel channel) {
+        String login = users.get(channel);
+        Path path = serverDataRoot.resolve(login);
+        List<File> files = PathUtils.getFilesList(path);
+        long spaceLimit = Math.min(db.getSpaceLimit(login), path.toFile().getFreeSpace());
+        return spaceLimit - PathUtils.getSize(files);
     }
 
     @Override

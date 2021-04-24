@@ -24,8 +24,8 @@ public class UploadRequestCommand implements CommandService {
         }
 
         String[] args = {
-                command.getArgs()[0],
-                command.getArgs()[1]
+                command.getArgs()[0], //channel auth key
+                command.getArgs()[1]  //client job key
         };
 
         CloudConnection uploadConnection = new CloudConnection(new Command(CommandCode.UPLOAD, args));

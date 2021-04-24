@@ -1,6 +1,7 @@
 package command.domain;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -36,6 +37,6 @@ public class Command implements Serializable {
 
     @Override
     public String toString() {
-        return code.toString() + " : " + Arrays.toString(args);
+        return code.toString() + " : " + new String(Arrays.toString(args).getBytes(StandardCharsets.UTF_8));
     }
 }

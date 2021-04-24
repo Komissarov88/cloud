@@ -25,16 +25,16 @@ public class DownloadRequestCommand implements CommandService {
             return;
         }
 
-        Path root = Factory.getNetworkService().getCurrentPath();
+        Path currentPath = Factory.getNetworkService().getCurrentPath();
         long totalSize = Long.parseLong(command.getArgs()[0]);
-        if (totalSize > root.toFile().getFreeSpace()) {
+        if (totalSize > currentPath.toFile().getFreeSpace()) {
             Logger.warning("not enough free space");
             return;
         }
 
         for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
             String authKey = command.getArgs()[i];
-            Path fileName = root.resolve(command.getArgs()[i+1]);
+            Path fileName = currentPath.resolve(command.getArgs()[i+1]);
             Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, fileName.toString());
             Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand));
         }

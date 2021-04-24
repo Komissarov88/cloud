@@ -2,7 +2,7 @@ CREATE TABLE public.user
 (
     login character varying(155) NOT NULL,
     password character varying(32) NOT NULL,
-    spacelimit integer NOT NULL DEFAULT 0,
+    spacelimit bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (login)
 )
     WITH (
