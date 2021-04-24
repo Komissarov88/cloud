@@ -3,8 +3,7 @@ version: '3.2'
 volumes:
   cloud-postgres:
     driver: local
-#  pgadmin:
-#
+
 networks:
   postgres:
     driver: bridge
@@ -26,20 +25,4 @@ services:
     ports:
       - "5435:5432"
 
-#  pgadmin:
-#      container_name: pgadmin_container
-#      image: dpage/pgadmin4
-#      environment:
-#        PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-#        PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-#        PGADMIN_CONFIG_SERVER_MODE: 'False'
-#      volumes:
-#        - pgadmin:/root/.pgadmin
-#
-#      ports:
-#        - "${PGADMIN_PORT:-5050}:80"
-#      networks:
-#        - postgres
-
 #  jdbc:postgresql://localhost:5435/cloud
-#  http://localhost:5050

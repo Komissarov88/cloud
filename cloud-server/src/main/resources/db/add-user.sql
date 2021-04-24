@@ -1,2 +1,2 @@
-insert into public.users (login, password, spacelimit)
+insert into public.user (login, password, spacelimit)
 values (?, ?, ?);

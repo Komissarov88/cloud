@@ -20,6 +20,9 @@ public class FileReadHandler extends ChannelInboundHandlerAdapter {
     public FileReadHandler(Path path) {
         OutputStream os = null;
         try {
+            if (path.getParent() != null) {
+                Files.createDirectories(path.getParent());
+            }
             os = Files.newOutputStream(path);
         } catch (IOException e) {
             e.printStackTrace();
