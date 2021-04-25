@@ -5,7 +5,7 @@ import command.service.CommandService;
 import files.service.FileJobService;
 import files.service.impl.FileJobServiceImpl;
 import my.cloud.server.service.*;
-import my.cloud.server.service.impl.database.PostgresService;
+import my.cloud.server.service.impl.database.PostgresDBServiceImpl;
 import command.service.impl.CommandDictionaryServiceImpl;
 import my.cloud.server.service.impl.NettyServerServiceImpl;
 import utils.ClassInstanceSetBuilder;
@@ -19,7 +19,7 @@ public class Factory {
     }
 
     public static DBService getDbService() {
-        return PostgresService.getInstance();
+        return PostgresDBServiceImpl.getInstance();
     }
 
     public static CommandDictionaryService getCommandDictionaryService() {

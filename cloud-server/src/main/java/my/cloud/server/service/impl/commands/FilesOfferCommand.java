@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 /**
  * Called when client want to upload file
  */
-public class UploadRequestCommand implements CommandService {
+public class FilesOfferCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -47,7 +47,8 @@ public class UploadRequestCommand implements CommandService {
             String clientKey = command.getArgs()[i];
             String uploadChannelAuthKey = Factory.getFileJobService().add(file, ctx.channel());
 
-            ctx.writeAndFlush(new Command(CommandCode.UPLOAD_REQUEST,
+            ctx.writeAndFlush(
+                    new Command(CommandCode.UPLOAD_POSSIBLE,
                     uploadChannelAuthKey,
                     clientKey));
         }
@@ -55,7 +56,7 @@ public class UploadRequestCommand implements CommandService {
 
     @Override
     public CommandCode getCommand() {
-        return CommandCode.UPLOAD_REQUEST;
+        return CommandCode.FILES_OFFER;
     }
 
 }

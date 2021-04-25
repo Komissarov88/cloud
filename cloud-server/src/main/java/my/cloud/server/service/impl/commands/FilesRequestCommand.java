@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Called when client want to download file
  */
-public class DownloadRequestCommand implements CommandService {
+public class FilesRequestCommand implements CommandService {
 
     private void sendRequest(ChannelHandlerContext ctx, File file) {
         List<File> files = PathUtils.getFilesList(file.toPath());
@@ -28,7 +28,7 @@ public class DownloadRequestCommand implements CommandService {
             response[i++] = Factory.getFileJobService().add(f, ctx.channel());
             response[i++] = file.getParentFile().toPath().relativize(f.toPath()).toString();
         }
-        ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_REQUEST, response));
+        ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_POSSIBLE, response));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class DownloadRequestCommand implements CommandService {
 
     @Override
     public CommandCode getCommand() {
-        return CommandCode.DOWNLOAD_REQUEST;
+        return CommandCode.FILES_REQUEST;
     }
 
 }

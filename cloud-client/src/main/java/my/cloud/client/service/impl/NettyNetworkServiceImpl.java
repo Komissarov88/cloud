@@ -2,7 +2,6 @@ package my.cloud.client.service.impl;
 
 import command.domain.Command;
 import command.domain.CommandCode;
-import io.netty.channel.Channel;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.service.NetworkService;
 import utils.PathUtils;
@@ -49,7 +48,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
 
     @Override
     public void downloadFile(Path file) {
-        mainConnection.sendCommand(new Command(CommandCode.DOWNLOAD_REQUEST, file.toString()));
+        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString()));
     }
 
     @Override
@@ -67,7 +66,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
             args[i++] = Factory.getFileJobService().add(f, mainConnection.getChannel());
             args[i++] = file.toPath().getFileName().resolve(file.toPath().relativize(f.toPath())).toString();
         }
-        mainConnection.sendCommand(new Command(CommandCode.UPLOAD_REQUEST, args));
+        mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }
 
     @Override

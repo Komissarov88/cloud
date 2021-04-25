@@ -11,7 +11,7 @@ import utils.Logger;
 /**
  * Called when server sends client authentication key for upload channel
  */
-public class UploadRequestCommand implements CommandService {
+public class UploadPossibleCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -34,7 +34,7 @@ public class UploadRequestCommand implements CommandService {
 
     @Override
     public CommandCode getCommand() {
-        return CommandCode.UPLOAD_REQUEST;
+        return CommandCode.UPLOAD_POSSIBLE;
     }
 
 }

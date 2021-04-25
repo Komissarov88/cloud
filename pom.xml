@@ -24,11 +24,12 @@
         <server.data.root.path>server-storage</server.data.root.path>
         <client.connections.maximum>5</client.connections.maximum>
         <user.default.space.gb>5</user.default.space.gb>
-        <db.address>192.168.2.222</db.address>
+        <db.address>192.168.1.13</db.address>
         <db.port>5435</db.port>
         <db.name>cloud</db.name>
         <db.user>postgres</db.user>
         <db.password>postgrespass</db.password>
+        <db.statement.path>/db/statement/</db.statement.path>
     </properties>
 
     <dependencies>

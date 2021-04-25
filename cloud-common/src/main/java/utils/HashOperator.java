@@ -7,9 +7,9 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Used form hashing passwords and FileJobs on server
  */
-public class Hash {
+public class HashOperator {
 
-    public static String get(String msg) {
+    public static String apply(String msg) {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("MD5");

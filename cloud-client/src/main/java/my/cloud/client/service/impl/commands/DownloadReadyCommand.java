@@ -3,13 +3,12 @@ package my.cloud.client.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
-import handler.FileReadHandler;
+import files.handler.FileReadHandler;
 import io.netty.channel.ChannelHandlerContext;
 import utils.Logger;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Consumer;
 
 /**
  * Called right before ChunkedWriteHandler on server side starts working

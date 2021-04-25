@@ -2,7 +2,7 @@ package files.service.impl;
 
 import files.service.FileJobService;
 import io.netty.channel.Channel;
-import utils.Hash;
+import utils.HashOperator;
 
 import java.io.File;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class FileJobServiceImpl implements FileJobService {
 
     @Override
     public String add(File file, Channel channel) {
-        String hash = Hash.get(channel.toString() + file);
+        String hash = HashOperator.apply(channel.toString() + file);
         jobs.putIfAbsent(hash, new FileJob(channel, file));
         return hash;
     }
