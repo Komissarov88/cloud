@@ -1,0 +1,7 @@
+plugins {
+    id 'java'
+}
+
+group 'my.cloud'
+version '1.0-SNAPSHOT'
+

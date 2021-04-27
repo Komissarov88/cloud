@@ -6,7 +6,7 @@ import java.util.Properties;
 
 public class PropertiesReader {
 
-    private static final String RESOURCE = "common.properties";
+    private static final String RESOURCE = "properties/common.properties";
     private static final Properties properties;
 
     static  {
