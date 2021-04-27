@@ -1,6 +1,7 @@
 package files.service.impl;
 
 import files.service.FileTransferProgressService;
+import utils.Logger;
 
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -20,10 +21,6 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
             this.size = size;
             this.transferred = 0;
         }
-
-        public long progress() {
-            return size - transferred;
-        }
     }
 
     public FileTransferProgressServiceImpl() {
@@ -36,10 +33,12 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
     }
 
     @Override
-    public void increment(Path path, long transferred) {
+    public void increment(Path path, int transferred) {
         Progress p = progressMap.get(path);
         if (p != null) {
             p.transferred += transferred;
+        } else {
+            Logger.warning("no such transfer:" + path);
         }
     }
 

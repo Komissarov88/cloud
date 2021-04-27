@@ -15,6 +15,8 @@ import utils.PathUtils;
 import utils.PropertiesReader;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -96,9 +98,18 @@ public class NettyServerServiceImpl implements ServerService {
         }
     }
 
+    private void createUserFolder(String login) {
+        try {
+            Files.createDirectories(serverDataRoot.resolve(login));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public long getUserFreeSpace(Channel channel) {
         String login = users.get(channel);
+        createUserFolder(login);
         Path path = serverDataRoot.resolve(login);
         List<File> files = PathUtils.getFilesList(path);
         long spaceLimit = Math.min(db.getSpaceLimit(login), path.toFile().getFreeSpace());

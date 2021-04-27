@@ -106,7 +106,7 @@ public class PostgresDBServiceImpl implements DBService {
 
     @Override
     public boolean addUser(String login, String nickname, String password) {
-        final long GIGABYTE = 1073741824;
+        final long GIGABYTE = 1_073_741_824;
         long spaceLimit = GIGABYTE * Long.parseLong(PropertiesReader.getProperty("user.default.space.gb"));
         try {
             String hash = HashOperator.apply(password);

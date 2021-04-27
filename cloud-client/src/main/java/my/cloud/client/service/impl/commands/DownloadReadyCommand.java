@@ -3,7 +3,7 @@ package my.cloud.client.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
-import files.handler.FileReadHandler;
+import files.handler.FileReadHandlerWithCallback;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
 import utils.Logger;
@@ -25,10 +25,11 @@ public class DownloadReadyCommand implements CommandService {
             return;
         }
 
-
-
         Path path = Factory.getFileTransferAuthService().getPathIfValid(command.getArgs()[0]);
-        ctx.pipeline().replace("ObjectDecoder", "Reader", new FileReadHandler(path));
+        FileReadHandlerWithCallback fileReadHandler = new FileReadHandlerWithCallback(path);
+        fileReadHandler.setTransferListener(Factory.getDownloadProgressService()::increment);
+
+        ctx.pipeline().replace("ObjectDecoder", "Reader", fileReadHandler);
         ctx.pipeline().removeLast();
     }
 
