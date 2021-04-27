@@ -2,10 +2,10 @@ package my.cloud.server.factory;
 
 import command.service.CommandDictionaryService;
 import command.service.CommandService;
-import files.service.FileJobService;
-import files.service.impl.FileJobServiceImpl;
+import files.service.FileTransferAuthService;
+import files.service.impl.FileTransferAuthServiceImpl;
 import my.cloud.server.service.*;
-import my.cloud.server.service.impl.database.PostgresService;
+import my.cloud.server.service.impl.database.PostgresDBServiceImpl;
 import command.service.impl.CommandDictionaryServiceImpl;
 import my.cloud.server.service.impl.NettyServerServiceImpl;
 import utils.ClassInstanceSetBuilder;
@@ -19,7 +19,7 @@ public class Factory {
     }
 
     public static DBService getDbService() {
-        return PostgresService.getInstance();
+        return PostgresDBServiceImpl.getInstance();
     }
 
     public static CommandDictionaryService getCommandDictionaryService() {
@@ -30,7 +30,7 @@ public class Factory {
         return commandDictionaryService;
     }
 
-    public static FileJobService getFileJobService() {
-        return FileJobServiceImpl.getInstance();
+    public static FileTransferAuthService getFileTransferAuthService() {
+        return FileTransferAuthServiceImpl.getInstance();
     }
 }

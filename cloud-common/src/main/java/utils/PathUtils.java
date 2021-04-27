@@ -36,6 +36,6 @@ public class PathUtils {
     }
 
     public static boolean isPathsParentAndChild(Path root, Path child) {
-        return root.normalize().compareTo(child.normalize()) <= 0;
+        return root.resolve(child).normalize().startsWith(root);
     }
 }

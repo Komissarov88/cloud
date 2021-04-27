@@ -17,7 +17,7 @@ public class SuccessResponseCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.SUCCESS;
     }
 

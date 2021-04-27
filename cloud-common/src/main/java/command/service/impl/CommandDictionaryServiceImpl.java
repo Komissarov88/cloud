@@ -20,7 +20,7 @@ public class CommandDictionaryServiceImpl implements CommandDictionaryService {
 
         Map<CommandCode, CommandService> commandDictionary = new HashMap<>();
         for (CommandService commandService : commandServices) {
-            commandDictionary.put(commandService.getCommand(), commandService);
+            commandDictionary.put(commandService.getCommandCode(), commandService);
         }
 
         this.commandDictionary = Collections.unmodifiableMap(commandDictionary);

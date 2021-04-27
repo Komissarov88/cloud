@@ -2,15 +2,13 @@ package my.cloud.server.service.impl.commands;
 
 import command.domain.Command;
 import command.domain.CommandCode;
-import handler.FileReadHandler;
+import files.handler.FileReadHandler;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
 import utils.Logger;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Called from upload channel with authenticate key
@@ -30,11 +28,10 @@ public class UploadCommand implements CommandService {
         String authKey = command.getArgs()[0];
         String clientJobKey = command.getArgs()[1];
 
-        File job = Factory.getFileJobService().remove(authKey);
-        if (job != null) {
+        Path path = Factory.getFileTransferAuthService().getPathIfValid(authKey);
+        if (path != null) {
 
             try {
-                Path path = Paths.get(job.getPath());
                 ctx.pipeline().replace(
                         "ObjectDecoder", "Reader", new FileReadHandler(path));
                 ctx.writeAndFlush(new Command(CommandCode.UPLOAD_READY, clientJobKey)).sync();
@@ -48,7 +45,7 @@ public class UploadCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.UPLOAD;
     }
 

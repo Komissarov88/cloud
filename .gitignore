@@ -1,11 +1,12 @@
 # Project exclude paths
-/cloud-client/target/
-/cloud-server/target/
-/cloud.iml
 /.idea
-/cloud-client/cloud-client.iml
-/cloud-server/cloud-server.iml
-/cloud-common/cloud-common.iml
-/cloud-common/target/
-/target/
 /server-storage/
+/gradle/
+/.gradle/
+*.iml
+/cloud.ipr
+/cloud.iws
+/cloud-server/build/
+/cloud-common/build/
+/cloud-client/build/
+/build/

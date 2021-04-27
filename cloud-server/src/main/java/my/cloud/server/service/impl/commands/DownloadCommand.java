@@ -12,6 +12,7 @@ import utils.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Called from download channel with authenticate key
@@ -39,19 +40,25 @@ public class DownloadCommand implements CommandService {
         }
 
         String key = command.getArgs()[0];
-        String clientPath = command.getArgs()[1];
+        String clientJobKey = command.getArgs()[1];
 
-        File job = Factory.getFileJobService().remove(key);
-        if (job != null) {
+        Path path = Factory.getFileTransferAuthService().getPathIfValid(key);
+        if (path != null) {
             ChunkedFile cf;
-            if ((cf = getChunkedFile(job)) == null) {
+            if ((cf = getChunkedFile(path.toFile())) == null) {
                 ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file"));
                 ctx.close();
                 return;
             }
 
             try {
-                ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_READY, clientPath)).sync();
+
+                Command readyCommand = new Command(
+                        CommandCode.DOWNLOAD_READY,
+                        clientJobKey,
+                        String.valueOf(path.toFile().length()));
+
+                ctx.writeAndFlush(readyCommand).sync();
                 ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
                 ctx.pipeline().removeLast();
                 ctx.writeAndFlush(cf).addListener((ChannelFutureListener) future -> {
@@ -67,7 +74,7 @@ public class DownloadCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.DOWNLOAD;
     }
 

@@ -55,7 +55,7 @@ public class ViewFilesInDirCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.LS;
     }
 

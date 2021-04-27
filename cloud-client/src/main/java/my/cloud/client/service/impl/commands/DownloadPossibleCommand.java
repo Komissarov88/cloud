@@ -13,7 +13,7 @@ import java.nio.file.Path;
 /**
  * Called when server sends key to authenticate download channel
  */
-public class DownloadRequestCommand implements CommandService {
+public class DownloadPossibleCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -32,17 +32,20 @@ public class DownloadRequestCommand implements CommandService {
             return;
         }
 
+        //TODO callback on progressbar
+
         for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
             String authKey = command.getArgs()[i];
             Path fileName = currentPath.resolve(command.getArgs()[i+1]);
-            Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, fileName.toString());
+            String jobKey = Factory.getFileTransferAuthService().add(fileName, ctx.channel());
+            Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, jobKey);
             Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand));
         }
     }
 
     @Override
-    public CommandCode getCommand() {
-        return CommandCode.DOWNLOAD_REQUEST;
+    public CommandCode getCommandCode() {
+        return CommandCode.DOWNLOAD_POSSIBLE;
     }
 
 }
