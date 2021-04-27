@@ -37,13 +37,14 @@ public class DownloadPossibleCommand implements CommandService {
         for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
             String authKey = command.getArgs()[i];
             Path fileName = currentPath.resolve(command.getArgs()[i+1]);
-            Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, fileName.toString());
+            String jobKey = Factory.getFileTransferAuthService().add(fileName, ctx.channel());
+            Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, jobKey);
             Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand));
         }
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.DOWNLOAD_POSSIBLE;
     }
 

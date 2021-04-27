@@ -27,7 +27,7 @@ public class PostgresDBServiceImpl implements DBService {
     }
 
     private String getStatementSql(String res) {
-        String statementLocation = PropertiesReader.getProperty("db.statement.path") +"/" + res;
+        String statementLocation = PropertiesReader.getProperty("db.statement.path") + res;
         String content = null;
         try {
             BufferedInputStream stream =

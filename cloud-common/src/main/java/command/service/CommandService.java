@@ -12,6 +12,6 @@ import java.util.function.Consumer;
 public interface CommandService {
 
     void processCommand(Command command, ChannelHandlerContext ctx);
-    CommandCode getCommand();
+    CommandCode getCommandCode();
     default void setCallback(Consumer<String[]> consumer){};
 }

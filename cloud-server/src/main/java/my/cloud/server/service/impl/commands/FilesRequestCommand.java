@@ -25,7 +25,7 @@ public class FilesRequestCommand implements CommandService {
         response[0] = String.valueOf(size);
         int i = 1;
         for (File f : files) {
-            response[i++] = Factory.getFileJobService().add(f, ctx.channel());
+            response[i++] = Factory.getFileTransferAuthService().add(f.toPath(), ctx.channel());
             response[i++] = file.getParentFile().toPath().relativize(f.toPath()).toString();
         }
         ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_POSSIBLE, response));
@@ -58,7 +58,7 @@ public class FilesRequestCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.FILES_REQUEST;
     }
 

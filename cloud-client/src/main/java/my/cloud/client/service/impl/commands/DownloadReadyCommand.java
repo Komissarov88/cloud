@@ -5,10 +5,10 @@ import command.domain.CommandCode;
 import command.service.CommandService;
 import files.handler.FileReadHandler;
 import io.netty.channel.ChannelHandlerContext;
+import my.cloud.client.factory.Factory;
 import utils.Logger;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Called right before ChunkedWriteHandler on server side starts working
@@ -20,18 +20,20 @@ public class DownloadReadyCommand implements CommandService {
         Logger.info(command.toString());
 
         if (command.getArgs() == null
-                || command.getArgs().length != 1) {
+                || command.getArgs().length != 2) {
             Logger.warning("wrong arguments");
             return;
         }
 
-        Path path = Paths.get(command.getArgs()[0]);
+
+
+        Path path = Factory.getFileTransferAuthService().getPathIfValid(command.getArgs()[0]);
         ctx.pipeline().replace("ObjectDecoder", "Reader", new FileReadHandler(path));
         ctx.pipeline().removeLast();
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.DOWNLOAD_READY;
     }
 }

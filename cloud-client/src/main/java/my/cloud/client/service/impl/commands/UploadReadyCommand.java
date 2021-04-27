@@ -12,6 +12,7 @@ import utils.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Called when server ready to receive ChunkedWriteHandler data
@@ -38,8 +39,8 @@ public class UploadReadyCommand implements CommandService {
         }
 
         ChunkedFile cf;
-        File file = Factory.getFileJobService().remove(command.getArgs()[0]);
-        if (file == null || (cf = getChunkedFile(file)) == null) {
+        Path path = Factory.getFileTransferAuthService().getPathIfValid(command.getArgs()[0]);
+        if (path == null || (cf = getChunkedFile(path.toFile())) == null) {
             Logger.warning("cant read file");
             ctx.close();
             return;
@@ -55,7 +56,7 @@ public class UploadReadyCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.UPLOAD_READY;
     }
 

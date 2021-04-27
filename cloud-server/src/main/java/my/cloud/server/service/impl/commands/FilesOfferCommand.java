@@ -45,7 +45,7 @@ public class FilesOfferCommand implements CommandService {
             }
 
             String clientKey = command.getArgs()[i];
-            String uploadChannelAuthKey = Factory.getFileJobService().add(file, ctx.channel());
+            String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(file.toPath(), ctx.channel());
 
             ctx.writeAndFlush(
                     new Command(CommandCode.UPLOAD_POSSIBLE,
@@ -55,7 +55,7 @@ public class FilesOfferCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.FILES_OFFER;
     }
 

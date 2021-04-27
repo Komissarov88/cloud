@@ -33,7 +33,7 @@ public class UploadPossibleCommand implements CommandService {
     }
 
     @Override
-    public CommandCode getCommand() {
+    public CommandCode getCommandCode() {
         return CommandCode.UPLOAD_POSSIBLE;
     }
 

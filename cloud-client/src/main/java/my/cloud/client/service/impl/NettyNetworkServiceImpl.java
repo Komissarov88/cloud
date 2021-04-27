@@ -63,7 +63,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
         args[0] = String.valueOf(size);
         int i = 1;
         for (File f : files) {
-            args[i++] = Factory.getFileJobService().add(f, mainConnection.getChannel());
+            args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
             args[i++] = file.toPath().getFileName().resolve(file.toPath().relativize(f.toPath())).toString();
         }
         mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
