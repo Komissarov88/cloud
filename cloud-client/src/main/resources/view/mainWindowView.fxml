@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="563.0" prefWidth="992.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="my.cloud.client.gui.controller.ApplicationController">
+
+    <VBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+        <children>
+            <MenuBar>
+                <menus>
+                    <Menu mnemonicParsing="false" text="File">
+                        <items>
+                            <MenuItem mnemonicParsing="false" onAction="#logout" text="Logout" />
+                            <MenuItem mnemonicParsing="false" onAction="#quit" text="Close" />
+                        </items>
+                    </Menu>
+                </menus>
+            </MenuBar>
+
+            <HBox VBox.vgrow="ALWAYS">
+
+                <padding>
+                    <Insets left="5" right="5" top="5" />
+                </padding>
+
+                <VBox id="leftSide" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label fx:id="clientPath" style="-fx-padding: 0 5 5 5;" text=" /  " />
+                    </HBox>
+                    <ListView fx:id="clientListView" VBox.vgrow="ALWAYS" />
+                </VBox>
+                <Separator opacity="0.0" orientation="VERTICAL" prefHeight="200.0" />
+
+                <VBox id="rightSide" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label fx:id="ServerPath" style="-fx-padding: 0 5 5 5;" text=" /  " />
+                    </HBox>
+                    <AnchorPane VBox.vgrow="ALWAYS">
+
+                        <VBox fx:id="serverListPane" opacity="0.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+                            <ListView fx:id="serverListView" VBox.vgrow="ALWAYS" />
+                        </VBox>
+
+                        <VBox fx:id="authForm" alignment="CENTER" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+                            <VBox alignment="CENTER" maxWidth="280.0" prefHeight="159.0" prefWidth="315.0">
+                                <children>
+                                    <HBox alignment="CENTER">
+                                        <children>
+                                            <Label prefWidth="60.0" text="Login" />
+                                            <TextField fx:id="loginTextField" />
+                                        </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" style="-fx-padding: 5 0 0 0;">
+                                        <children>
+                                            <Label prefWidth="60.0" text="Password" />
+                                            <PasswordField fx:id="passwordTextField" />
+                                        </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" maxWidth="210" style="-fx-padding: 10 0 0 0;">
+                                        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#login" prefWidth="100.0" text="Login" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#register" prefWidth="100.0" text="Register" />
+                                            </children>
+                                        </HBox>
+                                    </HBox>
+                                </children>
+                            </VBox>
+                            <Label fx:id="infoLabel" alignment="CENTER" />
+                        </VBox>
+                    </AnchorPane>
+                </VBox>
+            </HBox>
+
+            <HBox id="statusHBox" alignment="CENTER" style="-fx-padding: 5 5 5 5;">
+                <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <Button mnemonicParsing="false" prefWidth="90" text="Upload" />
+                </HBox>
+                <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <Button mnemonicParsing="false" prefWidth="90" text="Download" />
+                </HBox>
+            </HBox>
+
+        </children>
+    </VBox>
+
+</AnchorPane>

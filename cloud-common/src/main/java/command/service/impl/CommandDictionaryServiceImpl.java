@@ -36,4 +36,8 @@ public class CommandDictionaryServiceImpl implements CommandDictionaryService {
        c.processCommand(command, ctx);
     }
 
+    @Override
+    public CommandService getCommandService(CommandCode code) {
+        return commandDictionary.get(code);
+    }
 }

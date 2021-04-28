@@ -4,16 +4,21 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
-import utils.Logger;
+
+import java.util.function.Consumer;
 
 /**
  * Called on successful authentication
  */
-public class SuccessResponseCommand implements CommandService {
+public class AuthenticationSuccessCommand implements CommandService {
+
+    private Consumer<String[]> consumer;
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        Logger.info(command.toString());
+        if (consumer != null) {
+            consumer.accept(command.getArgs());
+        }
     }
 
     @Override
@@ -21,4 +26,8 @@ public class SuccessResponseCommand implements CommandService {
         return CommandCode.SUCCESS;
     }
 
+    @Override
+    public void setListener(Consumer<String[]> consumer) {
+        this.consumer = consumer;
+    }
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,11 +12,7 @@ public class PathUtils {
 
     private PathUtils() {}
 
-    public static File[] ls(Path path) {
-        return new File[0];
-    }
-
-    public static List<File> getFilesList(Path path) {
+    public static List<File> getFilesListRecursively(Path path) {
         List<File> files = null;
         try {
             files = Files.walk(path)
@@ -37,5 +34,57 @@ public class PathUtils {
 
     public static boolean isPathsParentAndChild(Path root, Path child) {
         return root.resolve(child).normalize().startsWith(root);
+    }
+
+    public static String[] lsDirectory(Path path) {
+        File directory = path.toFile();
+
+        if ( !directory.exists()) {
+            return new String[0];
+        }
+
+        if (directory.isFile()) {
+            return new String[]{directory.toString(), String.valueOf(directory.length())};
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return new String[0];
+        }
+
+        List<String> dirs = new LinkedList<>();
+        List<String> nestedFiles = new LinkedList<>();
+
+        for (File f : files) {
+            if (f.isDirectory()) {
+                dirs.add(directory.toPath().relativize(f.toPath()).toString());
+                dirs.add("D");
+            } else {
+                nestedFiles.add(directory.toPath().relativize(f.toPath()).toString());
+                nestedFiles.add(getFileSize(f));
+            }
+        }
+        dirs.addAll(nestedFiles);
+        String[] args = new String[dirs.size()];
+        return dirs.toArray(args);
+    }
+
+    private static String getFileSize(File childFile) {
+        long size = childFile.length();
+        final long KB = 1024;
+        final long MB = 1_048_576;
+        final long GIGABYTE = 1_073_741_824;
+
+        if (size >= GIGABYTE / 10) {
+            return String.format("%.2f Gb", (float) size / GIGABYTE);
+        }
+        if (size >= MB / 10) {
+            return String.format("%.2f Mb", (float) size / MB);
+        }
+        if (size >= KB / 10) {
+            return String.format("%.2f Kb", (float) size / KB);
+        }
+
+        return String.format("%d b", size);
     }
 }

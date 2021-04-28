@@ -8,16 +8,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 
 /**
  * Writes incoming bytes to file with overwrite
  */
-public class FileReadHandler extends ChannelInboundHandlerAdapter {
+public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
 
     public final OutputStream outputStream;
-    private long bytesReceived;
+    private final Path path;
+    private BiConsumer<Path, Integer> transferListener;
 
-    public FileReadHandler(Path path) {
+    public FileReadHandlerWithCallback(Path path) {
         OutputStream os = null;
         try {
             if (path.getParent() != null) {
@@ -28,10 +30,11 @@ public class FileReadHandler extends ChannelInboundHandlerAdapter {
             e.printStackTrace();
         }
         outputStream = os;
+        this.path = path;
     }
 
-    public long getBytesReceived() {
-        return bytesReceived;
+    public void setTransferListener(BiConsumer<Path, Integer> transferListener) {
+        this.transferListener = transferListener;
     }
 
     @Override
@@ -43,10 +46,10 @@ public class FileReadHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
-        if (buf.isReadable()) {
-            buf.readBytes(outputStream, buf.readableBytes());
-            bytesReceived += buf.readableBytes();
+        if (transferListener != null) {
+            transferListener.accept(path, buf.readableBytes());
         }
+        buf.readBytes(outputStream, buf.readableBytes());
         buf.release();
     }
 

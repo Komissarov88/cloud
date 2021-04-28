@@ -3,6 +3,7 @@ package my.cloud.client.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
+import files.handler.ChannelWriteHandlerWithCallback;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
@@ -30,7 +31,6 @@ public class UploadReadyCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        Logger.info(command.toString());
 
         if (command.getArgs() == null
                 || command.getArgs().length != 1) {
@@ -46,8 +46,13 @@ public class UploadReadyCommand implements CommandService {
             return;
         }
 
-        ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
-        ctx.pipeline().removeLast();
+        Factory.getUploadProgressService().add(path, path.toFile().length());
+        ChannelWriteHandlerWithCallback transferListener = new ChannelWriteHandlerWithCallback(path);
+        transferListener.setTransferListener(Factory.getUploadProgressService()::increment);
+
+        ctx.pipeline().replace("ObjectEncoder", "transferListener", transferListener);
+        ctx.pipeline().addAfter("transferListener", "chunkedWriter", new ChunkedWriteHandler());
+        ctx.pipeline().remove("MainInboundHandler");
         ctx.writeAndFlush(cf).addListener((ChannelFutureListener) future -> {
             Logger.info("upload complete");
             ctx.close();

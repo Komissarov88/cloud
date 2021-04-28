@@ -14,8 +14,8 @@ import utils.ClassInstanceSetBuilder;
 public class Factory {
 
     private static CommandDictionaryService commandDictionaryService;
-    private static FileTransferProgressService clientProgressService;
-    private static FileTransferProgressService serverProgressService;
+    private static FileTransferProgressService uploadProgressService;
+    private static FileTransferProgressService downloadProgressService;
 
     public static NetworkService getNetworkService() {
         return NettyNetworkServiceImpl.getInstance();
@@ -23,7 +23,7 @@ public class Factory {
 
     public static CommandDictionaryService getCommandDictionaryService() {
         if (commandDictionaryService == null) {
-            return new CommandDictionaryServiceImpl(ClassInstanceSetBuilder.build(
+            commandDictionaryService = new CommandDictionaryServiceImpl(ClassInstanceSetBuilder.build(
                             "my.cloud.client.service.impl.commands", CommandService.class));
         }
         return commandDictionaryService;
@@ -33,17 +33,17 @@ public class Factory {
         return FileTransferAuthServiceImpl.getInstance();
     }
 
-    public static FileTransferProgressService getClientProgressService() {
-        if (clientProgressService == null) {
-            clientProgressService = new FileTransferProgressServiceImpl();
+    public static FileTransferProgressService getUploadProgressService() {
+        if (uploadProgressService == null) {
+            uploadProgressService = new FileTransferProgressServiceImpl();
         }
-        return clientProgressService;
+        return uploadProgressService;
     }
 
-    public static FileTransferProgressService getServerProgressService() {
-        if (serverProgressService == null) {
-            serverProgressService = new FileTransferProgressServiceImpl();
+    public static FileTransferProgressService getDownloadProgressService() {
+        if (downloadProgressService == null) {
+            downloadProgressService = new FileTransferProgressServiceImpl();
         }
-        return serverProgressService;
+        return downloadProgressService;
     }
 }

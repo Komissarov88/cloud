@@ -5,7 +5,6 @@ import command.domain.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
-import utils.Logger;
 import utils.PathUtils;
 
 import java.io.File;
@@ -19,7 +18,6 @@ public class FilesOfferCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        Logger.info(command.toString());
 
         if (command.getArgs() == null
                 || command.getArgs().length < 3

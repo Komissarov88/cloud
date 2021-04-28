@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class NettyNetworkServiceImpl implements NetworkService {
 
@@ -56,23 +57,39 @@ public class NettyNetworkServiceImpl implements NetworkService {
         if (!file.canRead()) {
             return;
         }
-        List<File> files = PathUtils.getFilesList(file.toPath());
+        List<File> files = PathUtils.getFilesListRecursively(file.toPath());
         long size = PathUtils.getSize(files);
 
         String[] args = new String[files.size() * 2 + 1];
         args[0] = String.valueOf(size);
+        Path folderToTransfer = file.toPath().getFileName();
         int i = 1;
         for (File f : files) {
             args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
-            args[i++] = file.toPath().getFileName().resolve(file.toPath().relativize(f.toPath())).toString();
+            Path serverPath = folderToTransfer.resolve(folderToTransfer.relativize(f.toPath())).normalize();
+            args[i++] = serverPath.toString();
         }
         mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }
 
-    @Override
-    public void sendCommand(Command command) {
+    private void sendCommand(Command command) {
         if (isConnected()) {
             mainConnection.sendCommand(command);
+        }
+    }
+
+    public String getLogin() {
+        if (!isConnected()) {
+            login = "";
+        }
+        return login;
+    }
+
+    public void setCurrentPath(Path path) {
+        if (path.toFile().exists()) {
+            currentPath = path;
+        } else {
+            throw new IllegalArgumentException("path does not exist");
         }
     }
 
@@ -80,23 +97,16 @@ public class NettyNetworkServiceImpl implements NetworkService {
     public void closeConnection() {
         if (mainConnection != null) {
             mainConnection.disconnect();
+            executorService.shutdown();
         }
-        executorService.shutdown();
     }
 
+    @Override
     public boolean isConnected() {
         if (mainConnection == null) {
             return false;
         }
         return mainConnection.isConnected();
-    }
-
-    @Override
-    public String getLogin() {
-        if (!isConnected()) {
-            login = "";
-        }
-        return login;
     }
 
     @Override
@@ -110,11 +120,12 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void setCurrentPath(Path path) {
-        if (path.toFile().exists()) {
-            currentPath = path;
-        } else {
-            throw new IllegalArgumentException("path does not exist");
-        }
+    public void setCommandCodeListener(CommandCode code, Consumer<String[]> listener) {
+        Factory.getCommandDictionaryService().getCommandService(code).setListener(listener);
+    }
+
+    @Override
+    public void requestFileList() {
+        sendCommand(new Command(CommandCode.LS, "."));
     }
 }

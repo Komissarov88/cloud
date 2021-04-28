@@ -30,8 +30,8 @@ public class CloudConnection implements Runnable{
     }
 
     private void defaultPipeline(ChannelPipeline pipeline) {
-        pipeline.addLast("ObjectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
         pipeline.addLast("ObjectEncoder", new ObjectEncoder());
+        pipeline.addLast("ObjectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
         pipeline.addLast("MainInboundHandler", new MainInboundHandler());
     }
 

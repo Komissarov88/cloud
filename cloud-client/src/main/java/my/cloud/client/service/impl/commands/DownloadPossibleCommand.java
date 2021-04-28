@@ -17,7 +17,6 @@ public class DownloadPossibleCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        Logger.info(command.toString());
 
         if (command.getArgs() == null
                 || command.getArgs().length < 3) {
@@ -27,16 +26,20 @@ public class DownloadPossibleCommand implements CommandService {
 
         Path currentPath = Factory.getNetworkService().getCurrentPath();
         long totalSize = Long.parseLong(command.getArgs()[0]);
+        long filesNumber = Integer.parseInt(command.getArgs()[1]);
+
         if (totalSize > currentPath.toFile().getFreeSpace()) {
             Logger.warning("not enough free space");
             return;
         }
 
-        //TODO callback on progressbar
+        int j = 2;
+        for (int i = 0; i < filesNumber; i++) {
+            String authKey = command.getArgs()[j++];
+            Path fileName = currentPath.resolve(command.getArgs()[j++]);
+            long fileSize = Long.parseLong(command.getArgs()[j++]);
 
-        for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
-            String authKey = command.getArgs()[i];
-            Path fileName = currentPath.resolve(command.getArgs()[i+1]);
+            Factory.getDownloadProgressService().add(fileName, fileSize);
             String jobKey = Factory.getFileTransferAuthService().add(fileName, ctx.channel());
             Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, jobKey);
             Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand));

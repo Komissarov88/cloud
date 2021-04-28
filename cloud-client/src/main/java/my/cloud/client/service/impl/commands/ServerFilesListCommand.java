@@ -5,18 +5,29 @@ import command.domain.CommandCode;
 import command.service.CommandService;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.function.Consumer;
+
 /**
  * Called when something goes wrong
  */
-public class FailResponseCommand implements CommandService {
+public class ServerFilesListCommand implements CommandService {
+
+    private Consumer<String[]> consumer;
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
+        if (consumer != null) {
+            consumer.accept(command.getArgs());
+        }
     }
 
     @Override
     public CommandCode getCommandCode() {
-        return CommandCode.FAIL;
+        return CommandCode.LS;
     }
 
+    @Override
+    public void setListener(Consumer<String[]> consumer) {
+        this.consumer = consumer;
+    }
 }
