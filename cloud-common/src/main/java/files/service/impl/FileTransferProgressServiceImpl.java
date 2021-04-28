@@ -45,12 +45,12 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
     @Override
     public float progress(Path path) {
         if (progressMap.isEmpty()) {
-            return -1;
+            return 0;
         }
 
         Progress progress = progressMap.get(path);
         if (progress != null) {
-            return ((float) progress.transferred) / ((float) progress.size) * 100f;
+            return ((float) progress.transferred) / ((float) progress.size);
         }
 
         AtomicLong overallSize = new AtomicLong(0);
@@ -60,13 +60,17 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
             if (key.startsWith(path)) {
                 if (val.size <= val.transferred) {
                     done.add(key);
-                } else {
-                    overallSize.addAndGet(val.size);
-                    transferred.addAndGet(val.transferred);
                 }
+                overallSize.addAndGet(val.size);
+                transferred.addAndGet(val.transferred);
             }
         });
-        return transferred.floatValue() / overallSize.floatValue() * 100f;
+
+        for (Path donePath : done) {
+            remove(donePath);
+        }
+
+        return transferred.floatValue() / overallSize.floatValue();
     }
 
     @Override

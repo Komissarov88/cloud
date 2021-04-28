@@ -5,20 +5,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import my.cloud.client.controller.FileBrowser;
+import my.cloud.client.gui.controller.ApplicationController;
 
 public class MainApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("view/lsTest.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("view/mainWindowView.fxml"));
         Parent parent = loader.load();
         primaryStage.setScene(new Scene(parent));
         primaryStage.setTitle("My cloud client");
         primaryStage.setResizable(true);
 
-        FileBrowser controller = loader.getController();
+        ApplicationController controller = loader.getController();
         primaryStage.setOnCloseRequest((event) -> controller.shutdown());
         primaryStage.show();
     }
+
+
 }

@@ -42,7 +42,9 @@ public class NettyNetworkServiceImpl implements NetworkService {
         }
         this.login = login;
         mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
-        executorService = Executors.newFixedThreadPool(maximumConnections);
+        if (executorService == null) {
+            executorService = Executors.newFixedThreadPool(maximumConnections);
+        }
         submitConnection(mainConnection);
     }
 
@@ -82,8 +84,8 @@ public class NettyNetworkServiceImpl implements NetworkService {
     public void closeConnection() {
         if (mainConnection != null) {
             mainConnection.disconnect();
+            executorService.shutdown();
         }
-        executorService.shutdown();
     }
 
     public boolean isConnected() {
