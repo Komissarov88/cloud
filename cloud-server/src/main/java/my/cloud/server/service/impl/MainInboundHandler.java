@@ -24,6 +24,7 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
+        Logger.info(msg.toString());
         Factory.getCommandDictionaryService().processCommand(msg, ctx);
     }
 

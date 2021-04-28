@@ -13,5 +13,5 @@ public interface CommandService {
 
     void processCommand(Command command, ChannelHandlerContext ctx);
     CommandCode getCommandCode();
-    default void setCallback(Consumer<String[]> consumer){};
+    default void setListener(Consumer<String[]> consumer){};
 }

@@ -6,7 +6,6 @@ import files.handler.FileReadHandlerWithCallback;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
-import utils.Logger;
 
 import java.nio.file.Path;
 
@@ -17,7 +16,6 @@ public class UploadCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        Logger.info(command.toString());
 
         if (command.getArgs() == null
                 || command.getArgs().length != 2) {

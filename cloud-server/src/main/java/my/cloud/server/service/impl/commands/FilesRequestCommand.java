@@ -5,7 +5,6 @@ import command.domain.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 import command.service.CommandService;
-import utils.Logger;
 import utils.PathUtils;
 
 import java.io.File;
@@ -19,7 +18,7 @@ import java.util.List;
 public class FilesRequestCommand implements CommandService {
 
     private void sendRequest(ChannelHandlerContext ctx, File file) {
-        List<File> files = PathUtils.getFilesList(file.toPath());
+        List<File> files = PathUtils.getFilesListRecursively(file.toPath());
         long size = PathUtils.getSize(files);
         String[] response = new String[files.size() * 3 + 2];
         response[0] = String.valueOf(size); // total size
@@ -35,7 +34,6 @@ public class FilesRequestCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        Logger.info(command.toString());
 
         if (command.getArgs() == null
                 || command.getArgs().length != 1

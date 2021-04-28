@@ -8,12 +8,12 @@ import io.netty.channel.ChannelPromise;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
-public class WriteHandlerWithCallback extends ChannelOutboundHandlerAdapter {
+public class ChannelWriteHandlerWithCallback extends ChannelOutboundHandlerAdapter {
 
     private final Path path;
     private BiConsumer<Path, Integer> transferListener;
 
-    public WriteHandlerWithCallback(Path path) {
+    public ChannelWriteHandlerWithCallback(Path path) {
         this.path = path;
     }
 

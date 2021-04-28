@@ -111,7 +111,7 @@ public class NettyServerServiceImpl implements ServerService {
         String login = users.get(channel);
         createUserFolder(login);
         Path path = serverDataRoot.resolve(login);
-        List<File> files = PathUtils.getFilesList(path);
+        List<File> files = PathUtils.getFilesListRecursively(path);
         long spaceLimit = Math.min(db.getSpaceLimit(login), path.toFile().getFreeSpace());
         return spaceLimit - PathUtils.getSize(files);
     }

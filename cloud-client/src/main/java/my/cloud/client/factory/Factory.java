@@ -23,7 +23,7 @@ public class Factory {
 
     public static CommandDictionaryService getCommandDictionaryService() {
         if (commandDictionaryService == null) {
-            return new CommandDictionaryServiceImpl(ClassInstanceSetBuilder.build(
+            commandDictionaryService = new CommandDictionaryServiceImpl(ClassInstanceSetBuilder.build(
                             "my.cloud.client.service.impl.commands", CommandService.class));
         }
         return commandDictionaryService;
