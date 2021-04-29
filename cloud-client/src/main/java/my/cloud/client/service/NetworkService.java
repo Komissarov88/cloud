@@ -18,6 +18,6 @@ public interface NetworkService {
     Path getCurrentPath();
     void submitConnection(Runnable connection);
     void setCommandCodeListener(CommandCode code, Consumer<String[]> listener);
-
-    void requestFileList();
+    String getLogin();
+    void requestFileList(String path);
 }

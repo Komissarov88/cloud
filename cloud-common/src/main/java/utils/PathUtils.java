@@ -55,10 +55,14 @@ public class PathUtils {
         List<String> dirs = new LinkedList<>();
         List<String> nestedFiles = new LinkedList<>();
 
+        final String directoryPrefix = "D";
+        dirs.add("..");
+        dirs.add(directoryPrefix);
+
         for (File f : files) {
             if (f.isDirectory()) {
                 dirs.add(directory.toPath().relativize(f.toPath()).toString());
-                dirs.add("D");
+                dirs.add(directoryPrefix);
             } else {
                 nestedFiles.add(directory.toPath().relativize(f.toPath()).toString());
                 nestedFiles.add(getFileSize(f));
@@ -71,18 +75,18 @@ public class PathUtils {
 
     private static String getFileSize(File childFile) {
         long size = childFile.length();
-        final long KB = 1024;
-        final long MB = 1_048_576;
+        final long KILOBYTE = 1024;
+        final long MEGABYTE = 1_048_576;
         final long GIGABYTE = 1_073_741_824;
 
         if (size >= GIGABYTE / 10) {
             return String.format("%.2f Gb", (float) size / GIGABYTE);
         }
-        if (size >= MB / 10) {
-            return String.format("%.2f Mb", (float) size / MB);
+        if (size >= MEGABYTE / 10) {
+            return String.format("%.2f Mb", (float) size / MEGABYTE);
         }
-        if (size >= KB / 10) {
-            return String.format("%.2f Kb", (float) size / KB);
+        if (size >= KILOBYTE / 10) {
+            return String.format("%.2f Kb", (float) size / KILOBYTE);
         }
 
         return String.format("%d b", size);

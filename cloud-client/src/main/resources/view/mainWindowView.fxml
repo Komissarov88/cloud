@@ -4,6 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import my.cloud.client.gui.elements.impl.FileBrowserImpl?>
+<?import my.cloud.client.gui.elements.impl.ServerFileBrowserImpl?>
 <AnchorPane prefHeight="563.0" prefWidth="992.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="my.cloud.client.gui.controller.ApplicationController">
 
     <VBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
@@ -26,21 +28,16 @@
                 </padding>
 
                 <VBox id="leftSide" HBox.hgrow="ALWAYS">
-                    <HBox alignment="CENTER_LEFT">
-                        <Label fx:id="clientPath" style="-fx-padding: 0 5 5 5;" text=" /  " />
-                    </HBox>
-                    <ListView fx:id="clientListView" VBox.vgrow="ALWAYS" />
+                    <FileBrowserImpl fx:id="clientListView" VBox.vgrow="ALWAYS" />
                 </VBox>
+
                 <Separator opacity="0.0" orientation="VERTICAL" prefHeight="200.0" />
 
                 <VBox id="rightSide" HBox.hgrow="ALWAYS">
-                    <HBox alignment="CENTER_LEFT">
-                        <Label fx:id="ServerPath" style="-fx-padding: 0 5 5 5;" text=" /  " />
-                    </HBox>
                     <AnchorPane VBox.vgrow="ALWAYS">
 
                         <VBox fx:id="serverListPane" opacity="0.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
-                            <ListView fx:id="serverListView" VBox.vgrow="ALWAYS" />
+                            <ServerFileBrowserImpl fx:id="serverListView" VBox.vgrow="ALWAYS" />
                         </VBox>
 
                         <VBox fx:id="authForm" alignment="CENTER" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">

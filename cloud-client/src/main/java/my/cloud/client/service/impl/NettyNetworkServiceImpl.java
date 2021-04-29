@@ -43,6 +43,9 @@ public class NettyNetworkServiceImpl implements NetworkService {
         }
         this.login = login;
         mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
         executorService = Executors.newFixedThreadPool(maximumConnections);
         submitConnection(mainConnection);
     }
@@ -125,7 +128,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void requestFileList() {
-        sendCommand(new Command(CommandCode.LS, "."));
+    public void requestFileList(String path) {
+        sendCommand(new Command(CommandCode.LS, path));
     }
 }
