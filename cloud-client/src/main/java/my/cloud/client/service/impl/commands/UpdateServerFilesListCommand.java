@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /**
  * Called when something goes wrong
  */
-public class ServerFilesListCommand implements CommandService {
+public class UpdateServerFilesListCommand implements CommandService {
 
     private Consumer<String[]> consumer;
 
