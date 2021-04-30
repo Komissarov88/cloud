@@ -9,7 +9,6 @@ import utils.PropertiesReader;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +20,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private CloudConnection mainConnection;
     private String login;
     private ExecutorService executorService;
-    private Path currentPath = Paths.get("./");
 
     private final int maximumConnections = Integer.parseInt(
             PropertiesReader.getProperty("client.connections.maximum"));
@@ -36,13 +34,12 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private NettyNetworkServiceImpl() {
     }
 
-    @Override
-    public void connect(String login, String password) {
+    private void connect(String login, String password, CommandCode code) {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
         this.login = login;
-        mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
+        mainConnection = new CloudConnection(new Command(code, login, password));
         if (executorService != null) {
             executorService.shutdownNow();
         }
@@ -51,12 +48,22 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void downloadFile(Path file) {
-        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString()));
+    public void connect(String login, String password) {
+        connect(login, password, CommandCode.AUTH);
     }
 
     @Override
-    public void uploadFile(File file) {
+    public void requestRegistration(String login, String password) {
+        connect(login, password, CommandCode.REGISTER_REQUEST);
+    }
+
+    @Override
+    public void downloadFile(Path file, Path clientDownloadDirectory) {
+        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString(), clientDownloadDirectory.toString()));
+    }
+
+    @Override
+    public void uploadFile(File file, Path serverUploadDirectory) {
         if (!file.canRead()) {
             return;
         }
@@ -65,12 +72,12 @@ public class NettyNetworkServiceImpl implements NetworkService {
 
         String[] args = new String[files.size() * 2 + 1];
         args[0] = String.valueOf(size);
-        Path folderToTransfer = file.toPath().getFileName();
+        Path folderToTransfer = file.toPath();
         int i = 1;
         for (File f : files) {
             args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
-            Path serverPath = folderToTransfer.resolve(folderToTransfer.relativize(f.toPath())).normalize();
-            args[i++] = serverPath.toString();
+            Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
+            args[i++] = serverUploadDirectory.resolve(serverPath).toString();
         }
         mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }
@@ -78,21 +85,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private void sendCommand(Command command) {
         if (isConnected()) {
             mainConnection.sendCommand(command);
-        }
-    }
-
-    public String getLogin() {
-        if (!isConnected()) {
-            login = "";
-        }
-        return login;
-    }
-
-    public void setCurrentPath(Path path) {
-        if (path.toFile().exists()) {
-            currentPath = path;
-        } else {
-            throw new IllegalArgumentException("path does not exist");
         }
     }
 
@@ -117,10 +109,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
         executorService.submit(connection);
     }
 
-    @Override
-    public Path getCurrentPath() {
-        return currentPath;
-    }
 
     @Override
     public void setCommandCodeListener(CommandCode code, Consumer<String[]> listener) {

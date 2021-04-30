@@ -33,18 +33,24 @@ public class PathUtils {
     }
 
     public static boolean isPathsParentAndChild(Path root, Path child) {
-        return root.resolve(child).normalize().startsWith(root);
+        return child.normalize().startsWith(root);
     }
 
-    public static String[] lsDirectory(Path path) {
+    private static Path relativize(Path path, Path root) {
+        if (root == null) {
+            return path;
+        }
+        return root.relativize(path);
+    }
+
+    public static String[] lsDirectory(Path path, Path root) {
+
+        final String DIR_PREFIX = "D";
+
         File directory = path.toFile();
 
-        if ( !directory.exists()) {
+        if ( !directory.exists() || directory.isFile()) {
             return new String[0];
-        }
-
-        if (directory.isFile()) {
-            return new String[]{directory.toString(), String.valueOf(directory.length())};
         }
 
         File[] files = directory.listFiles();
@@ -55,16 +61,15 @@ public class PathUtils {
         List<String> dirs = new LinkedList<>();
         List<String> nestedFiles = new LinkedList<>();
 
-        final String directoryPrefix = "D";
-        dirs.add("..");
-        dirs.add(directoryPrefix);
+        dirs.add(relativize(path.normalize().resolve(".."), root).toString());
+        dirs.add(DIR_PREFIX);
 
         for (File f : files) {
             if (f.isDirectory()) {
-                dirs.add(directory.toPath().relativize(f.toPath()).toString());
-                dirs.add(directoryPrefix);
+                dirs.add(relativize(f.toPath(), root).normalize().toString());
+                dirs.add(DIR_PREFIX);
             } else {
-                nestedFiles.add(directory.toPath().relativize(f.toPath()).toString());
+                nestedFiles.add(relativize(f.toPath(), root).normalize().toString());
                 nestedFiles.add(getFileSize(f));
             }
         }

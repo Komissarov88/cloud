@@ -15,7 +15,9 @@ import my.cloud.client.service.NetworkService;
 import utils.Logger;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class ApplicationController implements Initializable {
@@ -33,7 +35,7 @@ public class ApplicationController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         networkService = Factory.getNetworkService();
-        networkService.setCommandCodeListener(CommandCode.SUCCESS, this::authenticationListener);
+        networkService.setCommandCodeListener(CommandCode.SUCCESS, this::onAuthenticationSuccess);
         networkService.setCommandCodeListener(CommandCode.LS, serverListView::updateListView);
 
         setupGUI();
@@ -50,12 +52,21 @@ public class ApplicationController implements Initializable {
     }
 
     public void download(ActionEvent actionEvent) {
-//        networkService.downloadFile(Paths.get(commandTextField.getText().trim()));
+        if (networkService.isConnected()) {
+            List<Path> downloadFiles = serverListView.getSelectedFilePaths();
+            for (Path downloadFile : downloadFiles) {
+                networkService.downloadFile(downloadFile, clientListView.getCurrentDirectory());
+            }
+        }
     }
 
     public void upload(ActionEvent actionEvent) {
-        timer.start();
-//        networkService.uploadFile(new File(commandTextField.getText().trim()));
+        if (networkService.isConnected()) {
+            List<Path> uploadFiles = clientListView.getSelectedFilePaths();
+            for (Path uploadFile : uploadFiles) {
+                networkService.uploadFile(uploadFile.toFile(), serverListView.getCurrentDirectory());
+            }
+        }
     }
 
     public void login(ActionEvent actionEvent) {
@@ -65,12 +76,16 @@ public class ApplicationController implements Initializable {
         }
     }
 
-    public void authenticationListener(String[] args) {
-        authViewToServerViewTransition.start();
-        networkService.requestFileList("/");
+    public void register(ActionEvent actionEvent) {
+        if (!networkService.isConnected()) {
+            networkService.requestRegistration(loginTextField.getText().trim(), passwordTextField.getText().trim());
+            passwordTextField.setText("");
+        }
     }
 
-    public void register(ActionEvent actionEvent) {
+    public void onAuthenticationSuccess(String[] args) {
+        authViewToServerViewTransition.start();
+        networkService.requestFileList("/");
     }
 
     public void logout(ActionEvent actionEvent) {
