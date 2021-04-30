@@ -17,6 +17,7 @@ public class ListItem extends VBox {
     private Label size;
     ProgressBar progressBar;
 
+    private Path path;
     private Pane pane;
     private void loadFXML() {
         try {
@@ -28,7 +29,7 @@ public class ListItem extends VBox {
         }
     }
 
-    public ListItem(String name, String size) {
+    public ListItem(String path, String size) {
         loadFXML();
         getChildren().add(pane);
 
@@ -36,12 +37,17 @@ public class ListItem extends VBox {
         this.size = (Label) pane.lookup("#size");
         progressBar = (ProgressBar) pane.lookup("#progress");
 
+        setPath(path);
         this.size.setText(size);
-        this.name.setText(name);
 
     }
 
+    public void setPath(String path) {
+        this.path = Paths.get(path);
+        this.name.setText(this.path.getFileName().toString());
+    }
+
     public Path getPath() {
-        return Paths.get(name.getText());
+        return path;
     }
 }

@@ -19,11 +19,11 @@ import java.util.Objects;
 
 public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
-    private Path currentPath;
+    protected Path currentPath;
     protected Path root;
-    private Label pathLabel;
+    protected Label pathLabel;
     private Button home;
-    private ItemListView listView;
+    protected ItemListView listView;
 
     private Pane pane;
 
@@ -53,7 +53,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() > 1) {
                 ListItem item = listView.getSelectionModel().getSelectedItem();
                 if (item != null) {
-                    onMouseDoubleClicked(item);
+                    changeDirectory(item.getPath());
                 }
             }
         });
@@ -61,15 +61,11 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 ListItem item = listView.getSelectionModel().getSelectedItem();
                 if (item != null) {
-                    onMouseDoubleClicked(item);
+                    changeDirectory(item.getPath());
                 }
             }
         });
         home.setOnAction(event -> changeDirectory(root));
-    }
-
-    protected void onMouseDoubleClicked(ListItem item) {
-        changeDirectory(item.getPath());
     }
 
     public void changeDirectory(Path path) {
@@ -78,7 +74,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             return;
         }
 
-        String[] files = PathUtils.lsDirectory(newPath);
+        String[] files = PathUtils.lsDirectory(newPath, null);
         if (files.length > 0) {
             currentPath = newPath;
             pathLabel.setText(currentPath.getFileName() == null ? "" : currentPath.getFileName().toString());
@@ -93,5 +89,12 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
                 listView.getItems().add(new ListItem(files[i], files[i + 1]));
             }
         });
+    }
+
+    private Path getSelectedFile(ListItem item) {
+        if (item == null || item.getPath().toString().equals("..")) {
+            return null;
+        }
+        return currentPath.resolve(listView.getSelectionModel().getSelectedItem().getPath());
     }
 }

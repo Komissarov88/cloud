@@ -6,7 +6,7 @@
 <?import my.cloud.client.gui.elements.impl.ItemListView?>
 <VBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
     <HBox alignment="CENTER_LEFT">
-        <Button id="home" text="/" style="-fx-padding: 0 5 5 5;"/>
+        <Button id="home" text="home" style="-fx-padding: 0 5 5 5;"/>
         <Label id="currentPath" style="-fx-padding: 0 5 5 5;" text="/" maxWidth="200"/>
     </HBox>
     <ItemListView id="listView" VBox.vgrow="ALWAYS"/>

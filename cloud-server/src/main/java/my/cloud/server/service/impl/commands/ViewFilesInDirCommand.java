@@ -7,6 +7,7 @@ import my.cloud.server.factory.Factory;
 import command.service.CommandService;
 import utils.PathUtils;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -25,8 +26,17 @@ public class ViewFilesInDirCommand implements CommandService {
             return;
         }
 
-        String[] args = PathUtils.lsDirectory(Paths.get(command.getArgs()[0]));
-        ctx.writeAndFlush(new Command(CommandCode.LS, args));
+        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+        Path requestPath = Paths.get(rootUserPath.toString(), command.getArgs()[0]);
+
+        if (!PathUtils.isPathsParentAndChild(rootUserPath, requestPath)) {
+            return;
+        }
+
+        String[] args = PathUtils.lsDirectory(requestPath, rootUserPath);
+        if (args.length > 0) {
+            ctx.writeAndFlush(new Command(CommandCode.LS, args));
+        }
     }
 
     @Override
