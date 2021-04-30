@@ -9,7 +9,6 @@ import utils.PropertiesReader;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,12 +49,12 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void downloadFile(Path file) {
-        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString()));
+    public void downloadFile(Path file, Path clientDownloadDirectory) {
+        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString(), clientDownloadDirectory.toString()));
     }
 
     @Override
-    public void uploadFile(File file, Path serverPrefix) {
+    public void uploadFile(File file, Path serverUploadDirectory) {
         if (!file.canRead()) {
             return;
         }
@@ -69,7 +68,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
         for (File f : files) {
             args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
             Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
-            args[i++] = serverPrefix.resolve(serverPath).toString();
+            args[i++] = serverUploadDirectory.resolve(serverPath).toString();
         }
         mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }

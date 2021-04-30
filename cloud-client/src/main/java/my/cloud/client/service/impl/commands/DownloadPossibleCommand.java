@@ -20,21 +20,21 @@ public class DownloadPossibleCommand implements CommandService {
     public void processCommand(Command command, ChannelHandlerContext ctx) {
 
         if (command.getArgs() == null
-                || command.getArgs().length < 3) {
+                || command.getArgs().length < 4) {
             Logger.warning("wrong arguments");
             return;
         }
 
-        Path currentPath = Paths.get(".");
         long totalSize = Long.parseLong(command.getArgs()[0]);
         long filesNumber = Integer.parseInt(command.getArgs()[1]);
+        Path currentPath = Paths.get(command.getArgs()[2]);
 
         if (totalSize > currentPath.toFile().getFreeSpace()) {
             Logger.warning("not enough free space");
             return;
         }
 
-        int j = 2;
+        int j = 3;
         for (int i = 0; i < filesNumber; i++) {
             String authKey = command.getArgs()[j++];
             Path fileName = currentPath.resolve(command.getArgs()[j++]);

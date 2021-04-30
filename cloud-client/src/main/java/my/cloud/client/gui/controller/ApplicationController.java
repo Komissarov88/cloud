@@ -55,7 +55,7 @@ public class ApplicationController implements Initializable {
         if (networkService.isConnected()) {
             List<Path> downloadFiles = serverListView.getSelectedFilePaths();
             for (Path downloadFile : downloadFiles) {
-                networkService.downloadFile(downloadFile);
+                networkService.downloadFile(downloadFile, clientListView.getCurrentDirectory());
             }
         }
     }

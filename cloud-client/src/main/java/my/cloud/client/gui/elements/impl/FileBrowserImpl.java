@@ -4,17 +4,14 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import my.cloud.client.gui.elements.FileBrowser;
-import my.cloud.client.gui.helper.ListItemPool;
 import utils.PathUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,7 +24,6 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected Path currentPath;
     protected Path root;
     protected Label pathLabel;
-    private Button home;
     protected ItemListView listView;
     private Pane pane;
     private ListItemPool listItemPool;
@@ -47,13 +43,15 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         getChildren().add(pane);
         pathLabel = (Label) pane.lookup("#currentPath");
         listView = (ItemListView) pane.lookup("#listView");
-        home = (Button) pane.lookup("#home");
+        Button home = (Button) pane.lookup("#home");
 
         root = Paths.get(".").toAbsolutePath();
+        listItemPool = new ListItemPool();
 
         pathLabel.setText(root.toString());
         currentPath = root;
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         listView.setOnMouseClicked(event -> {
             if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() > 1) {
                 ListItem item = listView.getSelectionModel().getSelectedItem();
@@ -71,9 +69,9 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             }
         });
         home.setOnAction(event -> changeDirectory(root));
-        listItemPool = new ListItemPool();
     }
 
+    @Override
     public void changeDirectory(Path path) {
         Path newPath = currentPath.resolve(path).normalize();
         if (!newPath.toFile().isDirectory()) {
@@ -88,6 +86,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         }
     }
 
+    @Override
     public void updateListView(String[] files) {
         Platform.runLater(() -> {
             List<ListItem> items = listView.getItems();

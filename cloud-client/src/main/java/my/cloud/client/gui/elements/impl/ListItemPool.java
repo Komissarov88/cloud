@@ -1,6 +1,4 @@
-package my.cloud.client.gui.helper;
-
-import my.cloud.client.gui.elements.impl.ListItem;
+package my.cloud.client.gui.elements.impl;
 
 import java.util.ArrayList;
 import java.util.List;
