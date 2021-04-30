@@ -15,7 +15,9 @@ import my.cloud.client.service.NetworkService;
 import utils.Logger;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class ApplicationController implements Initializable {
@@ -50,12 +52,21 @@ public class ApplicationController implements Initializable {
     }
 
     public void download(ActionEvent actionEvent) {
-//        networkService.downloadFile(Paths.get(commandTextField.getText().trim()));
+        if (networkService.isConnected()) {
+            List<Path> downloadFiles = serverListView.getSelectedFilePaths();
+            for (Path downloadFile : downloadFiles) {
+                networkService.downloadFile(downloadFile);
+            }
+        }
     }
 
     public void upload(ActionEvent actionEvent) {
-        timer.start();
-//        networkService.uploadFile(new File(commandTextField.getText().trim()));
+        if (networkService.isConnected()) {
+            List<Path> uploadFiles = clientListView.getSelectedFilePaths();
+            for (Path uploadFile : uploadFiles) {
+                networkService.uploadFile(uploadFile.toFile(), serverListView.getCurrentDirectory());
+            }
+        }
     }
 
     public void login(ActionEvent actionEvent) {

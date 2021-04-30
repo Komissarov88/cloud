@@ -4,18 +4,23 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import my.cloud.client.gui.elements.FileBrowser;
+import my.cloud.client.gui.helper.ListItemPool;
 import utils.PathUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
@@ -24,8 +29,8 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected Label pathLabel;
     private Button home;
     protected ItemListView listView;
-
     private Pane pane;
+    private ListItemPool listItemPool;
 
     private void loadFXML() {
         try {
@@ -66,6 +71,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             }
         });
         home.setOnAction(event -> changeDirectory(root));
+        listItemPool = new ListItemPool();
     }
 
     public void changeDirectory(Path path) {
@@ -84,17 +90,28 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
     public void updateListView(String[] files) {
         Platform.runLater(() -> {
-            listView.getItems().clear();
+            List<ListItem> items = listView.getItems();
+            items.clear();
+            listItemPool.freeAll();
             for (int i = 0; i <= files.length - 2; i += 2) {
-                listView.getItems().add(new ListItem(files[i], files[i + 1]));
+                items.add(listItemPool.obtain(files[i], files[i + 1]));
             }
         });
     }
 
-    private Path getSelectedFile(ListItem item) {
-        if (item == null || item.getPath().toString().equals("..")) {
-            return null;
-        }
-        return currentPath.resolve(listView.getSelectionModel().getSelectedItem().getPath());
+    @Override
+    public List<Path> getSelectedFilePaths() {
+        List<Path> list = listView.getSelectionModel().getSelectedItems()
+                .stream()
+                .map(ListItem::getPath)
+                .filter((p) -> !p.endsWith(".."))
+                .collect(Collectors.toList());
+
+        return list;
+    }
+
+    @Override
+    public Path getCurrentDirectory() {
+        return currentPath;
     }
 }

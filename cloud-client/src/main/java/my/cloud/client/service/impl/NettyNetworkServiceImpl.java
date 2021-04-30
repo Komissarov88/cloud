@@ -21,7 +21,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private CloudConnection mainConnection;
     private String login;
     private ExecutorService executorService;
-    private Path currentPath = Paths.get("./");
 
     private final int maximumConnections = Integer.parseInt(
             PropertiesReader.getProperty("client.connections.maximum"));
@@ -56,7 +55,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void uploadFile(File file) {
+    public void uploadFile(File file, Path serverPrefix) {
         if (!file.canRead()) {
             return;
         }
@@ -65,12 +64,12 @@ public class NettyNetworkServiceImpl implements NetworkService {
 
         String[] args = new String[files.size() * 2 + 1];
         args[0] = String.valueOf(size);
-        Path folderToTransfer = file.toPath().getFileName();
+        Path folderToTransfer = file.toPath();
         int i = 1;
         for (File f : files) {
             args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
-            Path serverPath = folderToTransfer.resolve(folderToTransfer.relativize(f.toPath())).normalize();
-            args[i++] = serverPath.toString();
+            Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
+            args[i++] = serverPrefix.resolve(serverPath).toString();
         }
         mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }
@@ -86,14 +85,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
             login = "";
         }
         return login;
-    }
-
-    public void setCurrentPath(Path path) {
-        if (path.toFile().exists()) {
-            currentPath = path;
-        } else {
-            throw new IllegalArgumentException("path does not exist");
-        }
     }
 
     @Override
@@ -117,10 +108,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
         executorService.submit(connection);
     }
 
-    @Override
-    public Path getCurrentPath() {
-        return currentPath;
-    }
 
     @Override
     public void setCommandCodeListener(CommandCode code, Consumer<String[]> listener) {

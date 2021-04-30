@@ -13,12 +13,13 @@ import java.util.Objects;
 
 public class ListItem extends VBox {
 
+    private Pane pane;
     private Label name;
     private Label size;
     ProgressBar progressBar;
 
     private Path path;
-    private Pane pane;
+
     private void loadFXML() {
         try {
             pane = FXMLLoader.load(
@@ -49,5 +50,14 @@ public class ListItem extends VBox {
 
     public Path getPath() {
         return path;
+    }
+
+    public void set(String path, String size) {
+        setPath(path);
+        this.size.setText(size);
+    }
+
+    public void setProgress(double progress) {
+        progressBar.progressProperty().set(progress);
     }
 }

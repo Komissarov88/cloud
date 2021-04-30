@@ -83,10 +83,10 @@
 
             <HBox id="statusHBox" alignment="CENTER" style="-fx-padding: 5 5 5 5;">
                 <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
-                    <Button mnemonicParsing="false" prefWidth="90" text="Upload"/>
+                    <Button mnemonicParsing="false" prefWidth="90" text="Upload" onAction="#upload"/>
                 </HBox>
                 <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
-                    <Button mnemonicParsing="false" prefWidth="90" text="Download"/>
+                    <Button mnemonicParsing="false" prefWidth="90" text="Download" onAction="#download"/>
                 </HBox>
             </HBox>
 

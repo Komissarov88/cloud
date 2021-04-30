@@ -22,13 +22,15 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
     @Override
     public void updateListView(String[] files) {
         super.updateListView(files);
-        currentPath = Paths.get(files[0]).normalize();
+        currentPath = Paths.get(files[0]).getParent();
+
 
         String pathName;
-        if (files[0].equals("..")) {
+        if (currentPath == null) {
             pathName = "root";
+            currentPath = root;
         } else {
-            pathName = Paths.get(files[0]).subpath(currentPath.getNameCount() - 1, currentPath.getNameCount()).toString();
+            pathName = currentPath.getFileName().toString();
         }
         Platform.runLater(() -> pathLabel.setText(pathName));
     }

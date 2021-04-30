@@ -9,6 +9,7 @@ import my.cloud.client.service.impl.CloudConnection;
 import utils.Logger;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Called when server sends key to authenticate download channel
@@ -24,7 +25,7 @@ public class DownloadPossibleCommand implements CommandService {
             return;
         }
 
-        Path currentPath = Factory.getNetworkService().getCurrentPath();
+        Path currentPath = Paths.get(".");
         long totalSize = Long.parseLong(command.getArgs()[0]);
         long filesNumber = Integer.parseInt(command.getArgs()[1]);
 
