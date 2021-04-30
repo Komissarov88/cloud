@@ -7,6 +7,7 @@ import utils.PropertiesReader;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -79,6 +80,26 @@ public class PostgresDBServiceImpl implements DBService {
     }
 
     @Override
+    public boolean addUser(String login, String password) {
+        if (getSpaceLimit(login) > 0) {
+            return false;
+        }
+
+        final long GIGABYTE = 1_073_741_824;
+        long spaceLimit = GIGABYTE * Long.parseLong(PropertiesReader.getProperty("user.default.space.gb"));
+        try {
+            String hash = HashOperator.apply(password);
+            addUserStatement.setString(1, login);
+            addUserStatement.setString(2, hash);
+            addUserStatement.setLong(3, spaceLimit);
+            addUserStatement.executeQuery();
+        } catch (SQLException e) {
+            Logger.info(new String(e.getMessage().getBytes(StandardCharsets.UTF_8)));
+        }
+        return true;
+    }
+
+    @Override
     public long getSpaceLimit(String login) {
         try {
             spaceLimitStatement.setString(1, login);
@@ -87,9 +108,9 @@ public class PostgresDBServiceImpl implements DBService {
                 return resultSet.getLong(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.info(new String(e.getMessage().getBytes(StandardCharsets.UTF_8)));
         }
-        return 0;
+        return -1;
     }
 
     @Override
@@ -102,22 +123,5 @@ public class PostgresDBServiceImpl implements DBService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean addUser(String login, String nickname, String password) {
-        final long GIGABYTE = 1_073_741_824;
-        long spaceLimit = GIGABYTE * Long.parseLong(PropertiesReader.getProperty("user.default.space.gb"));
-        try {
-            String hash = HashOperator.apply(password);
-            addUserStatement.setString(1, login);
-            addUserStatement.setString(2, hash);
-            addUserStatement.setLong(3, spaceLimit);
-            addUserStatement.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 }

@@ -34,18 +34,27 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private NettyNetworkServiceImpl() {
     }
 
-    @Override
-    public void connect(String login, String password) {
+    private void connect(String login, String password, CommandCode code) {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
         this.login = login;
-        mainConnection = new CloudConnection(new Command(CommandCode.AUTH, login, password));
+        mainConnection = new CloudConnection(new Command(code, login, password));
         if (executorService != null) {
             executorService.shutdownNow();
         }
         executorService = Executors.newFixedThreadPool(maximumConnections);
         submitConnection(mainConnection);
+    }
+
+    @Override
+    public void connect(String login, String password) {
+        connect(login, password, CommandCode.AUTH);
+    }
+
+    @Override
+    public void requestRegistration(String login, String password) {
+        connect(login, password, CommandCode.REGISTER_REQUEST);
     }
 
     @Override
@@ -77,13 +86,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
         if (isConnected()) {
             mainConnection.sendCommand(command);
         }
-    }
-
-    public String getLogin() {
-        if (!isConnected()) {
-            login = "";
-        }
-        return login;
     }
 
     @Override

@@ -16,4 +16,5 @@ public interface NetworkService {
     void submitConnection(Runnable connection);
     void setCommandCodeListener(CommandCode code, Consumer<String[]> listener);
     void requestFileList(String path);
+    void requestRegistration(String login, String password);
 }
