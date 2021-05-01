@@ -30,19 +30,26 @@ public class FilesOfferCommand implements CommandService {
 
         long size = Long.parseLong(command.getArgs()[0]);
         if (size > Factory.getServerService().getUserFreeSpace(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "no free space"));
+            String[] args = new String[(command.getArgs().length - 1) / 2];
+            for (int i = 0; i < args.length; i++) {
+                String clientKey = command.getArgs()[i * 2 + 1];
+                args[i] = clientKey;
+            }
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "not enough free space"));
+            ctx.writeAndFlush(new Command(CommandCode.OFFER_REFUSED, args));
             return;
         }
 
         for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
             File file = Paths.get(rootUserPath.toString(), command.getArgs()[i+1]).toFile();
+            String clientKey = command.getArgs()[i];
 
             if (!PathUtils.isPathsParentAndChild(rootUserPath, file.toPath())) {
                 ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
+                ctx.writeAndFlush(new Command(CommandCode.OFFER_REFUSED, clientKey));
                 continue;
             }
 
-            String clientKey = command.getArgs()[i];
             String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(file.toPath(), ctx.channel());
 
             ctx.writeAndFlush(

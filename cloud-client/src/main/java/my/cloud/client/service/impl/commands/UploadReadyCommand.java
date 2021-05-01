@@ -46,7 +46,6 @@ public class UploadReadyCommand implements CommandService {
             return;
         }
 
-        Factory.getUploadProgressService().add(path, path.toFile().length());
         ChannelWriteHandlerWithCallback transferListener = new ChannelWriteHandlerWithCallback(path);
         transferListener.setTransferListener(Factory.getUploadProgressService()::increment);
 

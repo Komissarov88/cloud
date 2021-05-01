@@ -3,9 +3,8 @@ package files.service.impl;
 import files.service.FileTransferProgressService;
 import utils.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -38,43 +37,32 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
         if (p != null) {
             p.transferred += transferred;
         } else {
-            Logger.warning("no such transfer:" + path);
+            Logger.warning("no such transfer: " + new String(path.toString().getBytes(StandardCharsets.UTF_8)));
         }
     }
 
     @Override
     public float progress(Path path) {
-        if (progressMap.isEmpty()) {
-            return 0;
-        }
-
         Progress progress = progressMap.get(path);
-        if (progress != null) {
-            return ((float) progress.transferred) / ((float) progress.size);
+        if (progress == null) {
+            return -1;
         }
-
-        AtomicLong overallSize = new AtomicLong(0);
-        AtomicLong transferred = new AtomicLong(0);
-        List<Path> done = new LinkedList<>();
-        progressMap.forEach((key, val) -> {
-            if (key.startsWith(path)) {
-                if (val.size <= val.transferred) {
-                    done.add(key);
-                }
-                overallSize.addAndGet(val.size);
-                transferred.addAndGet(val.transferred);
-            }
-        });
-
-        for (Path donePath : done) {
-            remove(donePath);
-        }
-
-        return transferred.floatValue() / overallSize.floatValue();
+        return ((float) progress.transferred) / ((float) progress.size);
     }
 
     @Override
-    public void remove(Path path) {
-        progressMap.remove(path);
+    public float totalProgress() {
+        if (progressMap.isEmpty()) {
+            return -1;
+        }
+
+        AtomicLong transferred = new AtomicLong(0);
+        AtomicLong size = new AtomicLong(0);
+        progressMap.forEach((key, val) -> {
+            transferred.addAndGet(val.transferred);
+            size.addAndGet(val.size);
+        });
+
+        return transferred.floatValue() / size.floatValue();
     }
 }

@@ -18,7 +18,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
 
     private static NettyNetworkServiceImpl instance;
     private CloudConnection mainConnection;
-    private String login;
     private ExecutorService executorService;
 
     private final int maximumConnections = Integer.parseInt(
@@ -38,7 +37,6 @@ public class NettyNetworkServiceImpl implements NetworkService {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
-        this.login = login;
         mainConnection = new CloudConnection(new Command(code, login, password));
         if (executorService != null) {
             executorService.shutdownNow();
@@ -70,6 +68,8 @@ public class NettyNetworkServiceImpl implements NetworkService {
         List<File> files = PathUtils.getFilesListRecursively(file.toPath());
         long size = PathUtils.getSize(files);
 
+        Factory.getUploadProgressService().add(file.toPath(), size);
+
         String[] args = new String[files.size() * 2 + 1];
         args[0] = String.valueOf(size);
         Path folderToTransfer = file.toPath();
@@ -82,7 +82,8 @@ public class NettyNetworkServiceImpl implements NetworkService {
         mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }
 
-    private void sendCommand(Command command) {
+    @Override
+    public void sendCommand(Command command) {
         if (isConnected()) {
             mainConnection.sendCommand(command);
         }

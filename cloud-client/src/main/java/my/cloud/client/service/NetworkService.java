@@ -1,5 +1,6 @@
 package my.cloud.client.service;
 
+import command.domain.Command;
 import command.domain.CommandCode;
 
 import java.io.File;
@@ -17,4 +18,5 @@ public interface NetworkService {
     void setCommandCodeListener(CommandCode code, Consumer<String[]> listener);
     void requestFileList(String path);
     void requestRegistration(String login, String password);
+    void sendCommand(Command command);
 }

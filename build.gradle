@@ -3,7 +3,7 @@ version '1.0-SNAPSHOT'
 
 allprojects {
     apply plugin: 'idea'
-    apply plugin: 'java'
+    apply plugin: "java-library"
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
@@ -33,12 +33,52 @@ project(":cloud-common") {
 
 project(":cloud-client") {
 
+    project.ext.mainClassName = "my.cloud.client.MainApplication"
+
+    task runClient(dependsOn: classes, type: JavaExec) {
+        main = project.mainClassName
+        classpath = sourceSets.main.runtimeClasspath
+        standardInput = System.in
+        workingDir = System.getProperty("user.home")
+    }
+
+    task dist(type: Jar) {
+        manifest {
+            attributes 'Main-Class': project.mainClassName
+        }
+        dependsOn configurations.runtimeClasspath
+        from {
+            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+        with jar
+    }
+
     dependencies {
         implementation project(":cloud-common")
     }
 }
 
 project(":cloud-server") {
+
+    project.ext.mainClassName = "my.cloud.server.MainServer"
+
+    task runServer(dependsOn: classes, type: JavaExec) {
+        main = project.mainClassName
+        classpath = sourceSets.main.runtimeClasspath
+        standardInput = System.in
+        workingDir = "."
+    }
+
+    task dist(type: Jar) {
+        manifest {
+            attributes 'Main-Class': project.mainClassName
+        }
+        dependsOn configurations.runtimeClasspath
+        from {
+            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+        with jar
+    }
 
     dependencies {
         implementation project(":cloud-common")

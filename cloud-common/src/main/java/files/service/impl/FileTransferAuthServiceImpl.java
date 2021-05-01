@@ -55,6 +55,10 @@ public class FileTransferAuthServiceImpl implements FileTransferAuthService {
     }
 
     @Override
+    public void remove(String key) {
+        jobs.remove(key);
+    }
+
     public void clean() {
         for (Map.Entry<String, Transfer> stringFileJobEntry : jobs.entrySet()) {
             if (!stringFileJobEntry.getValue().channel.isOpen()) {
