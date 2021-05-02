@@ -38,7 +38,8 @@ public class FilesRequestCommand implements CommandService {
         if (command.getArgs() == null
                 || command.getArgs().length != 2
                 || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL,
+                    "wrong arguments, expected wanted file and target client folder"));
             return;
         }
 

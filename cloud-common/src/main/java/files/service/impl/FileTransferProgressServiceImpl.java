@@ -28,10 +28,9 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
 
     @Override
     public void add(Path path, long size) {
-        if (progressMap.containsKey(path)) {
+        if (progressMap.putIfAbsent(path, new Progress(size)) != null) {
             Logger.warning("transfer already exists: " + path);
         }
-        progressMap.putIfAbsent(path, new Progress(size));
     }
 
     @Override

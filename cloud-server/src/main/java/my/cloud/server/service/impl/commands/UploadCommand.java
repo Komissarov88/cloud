@@ -19,7 +19,7 @@ public class UploadCommand implements CommandService {
 
         if (command.getArgs() == null
                 || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected keys pair"));
             return;
         }
 
@@ -39,7 +39,7 @@ public class UploadCommand implements CommandService {
             }
             return;
         }
-        ctx.writeAndFlush(new Command(CommandCode.FAIL, "authentication fails"));
+        ctx.writeAndFlush(new Command(CommandCode.FAIL, "transfer channel authentication fails"));
     }
 
     @Override

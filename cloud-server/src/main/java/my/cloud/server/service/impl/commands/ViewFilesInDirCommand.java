@@ -18,11 +18,10 @@ public class ViewFilesInDirCommand implements CommandService {
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
 
-        final int requirementCountCommandParts = 1;
-
-        if (command.getArgs().length != requirementCountCommandParts
+        if (command.getArgs().length != 1
                 || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL,
+                    "wrong arguments, expected one directory and user to be logged in"));
             return;
         }
 

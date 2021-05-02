@@ -22,7 +22,8 @@ public class FilesOfferCommand implements CommandService {
         if (command.getArgs() == null
                 || command.getArgs().length < 3
                 || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL,
+                    "wrong arguments, expected total size and key fail pairs"));
             return;
         }
 

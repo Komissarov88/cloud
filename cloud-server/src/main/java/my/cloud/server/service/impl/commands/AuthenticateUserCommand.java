@@ -20,7 +20,7 @@ public class AuthenticateUserCommand implements CommandService {
     public void processCommand(Command command, ChannelHandlerContext ctx) {
 
         if (command.getArgs() == null || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected login password pair"));
             ctx.close();
             return;
         }
