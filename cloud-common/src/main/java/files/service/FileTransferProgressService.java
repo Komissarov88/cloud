@@ -8,4 +8,5 @@ public interface FileTransferProgressService {
     void increment(Path path, int transferred);
     float totalProgress();
     float progress(Path path);
+    void remove(Path path);
 }

@@ -17,15 +17,14 @@ import java.util.List;
  */
 public class FilesRequestCommand implements CommandService {
 
-    private void sendRequest(ChannelHandlerContext ctx, String request, File file, String clientDownloadFolder) {
+    private void sendRequest(ChannelHandlerContext ctx, File file, String clientDownloadFolder) {
         List<File> files = PathUtils.getFilesListRecursively(file.toPath());
         long size = PathUtils.getSize(files);
         String[] response = new String[files.size() * 2 + 4];
         response[0] = String.valueOf(size); // total size
         response[1] = String.valueOf(files.size()); // number of files
         response[2] = clientDownloadFolder;
-        response[3] = request;
-        int i = 4;
+        int i = 3;
         for (File f : files) {
             response[i++] = Factory.getFileTransferAuthService().add(f.toPath(), ctx.channel());
             response[i++] = file.getParentFile().toPath().relativize(f.toPath()).toString();
@@ -53,7 +52,7 @@ public class FilesRequestCommand implements CommandService {
         }
 
         if (requestFile.canRead()) {
-            sendRequest(ctx, command.getArgs()[0], requestFile, clientDownloadFolder);
+            sendRequest(ctx, requestFile, clientDownloadFolder);
         } else {
             ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file", requestFile.toString()));
         }

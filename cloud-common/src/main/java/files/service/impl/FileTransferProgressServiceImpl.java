@@ -3,9 +3,9 @@ package files.service.impl;
 import files.service.FileTransferProgressService;
 import utils.Logger;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FileTransferProgressServiceImpl implements FileTransferProgressService {
@@ -14,11 +14,11 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
 
     private static class Progress {
         long size;
-        long transferred;
+        AtomicLong transferred;
 
         public Progress(long size) {
             this.size = size;
-            this.transferred = 0;
+            this.transferred = new AtomicLong(0);
         }
     }
 
@@ -28,16 +28,27 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
 
     @Override
     public void add(Path path, long size) {
+        if (progressMap.containsKey(path)) {
+            Logger.warning("transfer already exists: " + path);
+        }
         progressMap.putIfAbsent(path, new Progress(size));
     }
 
     @Override
     public void increment(Path path, int transferred) {
-        Progress p = progressMap.get(path);
-        if (p != null) {
-            p.transferred += transferred;
-        } else {
-            Logger.warning("no such transfer: " + new String(path.toString().getBytes(StandardCharsets.UTF_8)));
+
+        AtomicInteger incremented = new AtomicInteger(0);
+        progressMap.forEach((key, val) -> {
+            if (path.startsWith(key)) {
+                val.transferred.addAndGet(transferred);
+                incremented.addAndGet(1);
+            }
+        });
+
+        if (incremented.get() == 0) {
+            Logger.warning("no such transfer: " + path);
+        } else if (incremented.get() > 1) {
+            Logger.error("multiple progress increment: " + path);
         }
     }
 
@@ -47,7 +58,7 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
         if (progress == null) {
             return -1;
         }
-        return ((float) progress.transferred) / ((float) progress.size);
+        return (progress.transferred.floatValue()) / (float) (progress.size);
     }
 
     @Override
@@ -59,10 +70,23 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
         AtomicLong transferred = new AtomicLong(0);
         AtomicLong size = new AtomicLong(0);
         progressMap.forEach((key, val) -> {
-            transferred.addAndGet(val.transferred);
+            transferred.addAndGet(val.transferred.get());
             size.addAndGet(val.size);
         });
 
         return transferred.floatValue() / size.floatValue();
+    }
+
+    @Override
+    public void remove(Path path) {
+        Progress progress = progressMap.get(path);
+        if (progress != null) {
+            if (progress.transferred.get() != progress.size) {
+                Logger.warning("removing incomplete transfer: " + path);
+            }
+            progressMap.remove(path);
+        } else {
+            Logger.warning("no such transfer: " + path);
+        }
     }
 }

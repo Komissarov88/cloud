@@ -28,12 +28,11 @@ public class DownloadPossibleCommand implements CommandService {
         long totalSize = Long.parseLong(command.getArgs()[0]);
         int filesNumber = Integer.parseInt(command.getArgs()[1]);
         Path targetPath = Paths.get(command.getArgs()[2]);
-        Path requestRoot = Paths.get(command.getArgs()[3]);
 
         if (totalSize > targetPath.toFile().getFreeSpace()) {
             Logger.warning("not enough free space");
             String[] args = new String[filesNumber];
-            int j = 4;
+            int j = 3;
             for (int i = 0; i < filesNumber; i++) {
                 String authKey = command.getArgs()[j];
                 args[i] = authKey;
@@ -43,9 +42,9 @@ public class DownloadPossibleCommand implements CommandService {
             return;
         }
 
-        Factory.getDownloadProgressService().add(requestRoot, totalSize);
+        Factory.getDownloadProgressService().add(targetPath, totalSize);
 
-        int j = 4;
+        int j = 3;
         for (int i = 0; i < filesNumber; i++) {
             String authKey = command.getArgs()[j++];
             Path fileName = targetPath.resolve(command.getArgs()[j++]);
