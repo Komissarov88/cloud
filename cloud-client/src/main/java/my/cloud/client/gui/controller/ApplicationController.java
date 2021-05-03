@@ -31,12 +31,16 @@ public class ApplicationController implements Initializable {
     public PasswordField passwordTextField;
     public Pane serverListPane;
     private PaneCrossfade authViewToServerViewTransition;
+    private AnimationTimer progressAnimation;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         networkService = Factory.getNetworkService();
         networkService.setCommandCodeListener(CommandCode.SUCCESS, this::onAuthenticationSuccess);
         networkService.setCommandCodeListener(CommandCode.LS, serverListView::updateListView);
+        networkService.setCommandCodeListener(CommandCode.DOWNLOAD_POSSIBLE, serverListView::startProgressAnimation);
+        clientListView.setProgressService(Factory.getUploadProgressService());
+        serverListView.setProgressService(Factory.getDownloadProgressService());
 
         setupGUI();
     }
@@ -44,6 +48,28 @@ public class ApplicationController implements Initializable {
     private void setupGUI() {
         authViewToServerViewTransition = new PaneCrossfade(authForm, serverListPane, 15);
         clientListView.changeDirectory(Paths.get("."));
+        progressAnimation = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if (clientListView.handleAnimation(now)) {
+                    serverListView.refreshView();
+                }
+                if (serverListView.handleAnimation(now)) {
+                    clientListView.refreshView();
+                }
+                if (Math.abs(Factory.getUploadProgressService().totalProgress()) >= 1
+                        && Math.abs(Factory.getDownloadProgressService().totalProgress()) >= 1
+                        && Factory.getDownloadProgressService().getTransferList().size() == 0) {
+                    stop();
+                }
+            }
+
+            @Override
+            public void start() {
+                clientListView.startProgressAnimation();
+                super.start();
+            }
+        };
     }
 
     public void shutdown() {
@@ -57,6 +83,7 @@ public class ApplicationController implements Initializable {
             for (Path downloadFile : downloadFiles) {
                 networkService.downloadFile(downloadFile, clientListView.getCurrentDirectory());
             }
+            progressAnimation.start();
         }
     }
 
@@ -66,6 +93,7 @@ public class ApplicationController implements Initializable {
             for (Path uploadFile : uploadFiles) {
                 networkService.uploadFile(uploadFile.toFile(), serverListView.getCurrentDirectory());
             }
+            progressAnimation.start();
         }
     }
 

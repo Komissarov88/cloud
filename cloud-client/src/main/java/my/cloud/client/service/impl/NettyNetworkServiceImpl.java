@@ -75,7 +75,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
         Path folderToTransfer = file.toPath();
         int i = 1;
         for (File f : files) {
-            args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
+            args[i++] = Factory.getFileTransferAuthService().add(null, f.toPath(), mainConnection.getChannel());
             Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
             args[i++] = serverUploadDirectory.resolve(serverPath).toString();
         }

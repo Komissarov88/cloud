@@ -2,21 +2,21 @@ package my.cloud.client.gui.elements.impl;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import my.cloud.client.gui.helper.AnimatedProgressBar;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-public class ListItem extends VBox {
+public class FileItem extends VBox {
 
     private Pane pane;
-    private Label name;
-    private Label size;
-    ProgressBar progressBar;
+    private final Label name;
+    private final Label size;
+    AnimatedProgressBar progressBar;
 
     private Path path;
 
@@ -24,19 +24,19 @@ public class ListItem extends VBox {
         try {
             pane = FXMLLoader.load(
                     Objects.requireNonNull(
-                            ListItem.class.getResource("/view/listItemView.fxml")));
+                            FileItem.class.getResource("/view/listItemView.fxml")));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public ListItem(String path, String size) {
+    public FileItem(String path, String size) {
         loadFXML();
         getChildren().add(pane);
 
         this.name = (Label) pane.lookup("#name");
         this.size = (Label) pane.lookup("#size");
-        progressBar = (ProgressBar) pane.lookup("#progress");
+        progressBar = (AnimatedProgressBar) pane.lookup("#progress");
 
         setPath(path);
         this.size.setText(size);
@@ -54,10 +54,12 @@ public class ListItem extends VBox {
 
     public void set(String path, String size) {
         setPath(path);
+        progressBar.reset();
         this.size.setText(size);
     }
 
     public void setProgress(double progress) {
-        progressBar.progressProperty().set(progress);
+        progressBar.setProgress(progress);
+        progressBar.startAnimation();
     }
 }

@@ -1,5 +1,6 @@
 package my.cloud.client.gui.elements.impl;
 
+import files.service.FileTransferProgressService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -10,6 +11,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import my.cloud.client.gui.elements.FileBrowser;
+import my.cloud.client.gui.helper.AnimatedProgressBar;
+import utils.Logger;
 import utils.PathUtils;
 
 import java.io.IOException;
@@ -24,15 +27,17 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected Path currentPath;
     protected Path root;
     protected Label pathLabel;
-    protected ItemListView listView;
+    protected FileItemListView listView;
     private Pane pane;
-    private ListItemPool listItemPool;
+    private final AnimatedProgressBar totalProgress;
+    private final FileItemPool fileItemPool;
+    protected FileTransferProgressService progressService;
 
     private void loadFXML() {
         try {
             pane = FXMLLoader.load(
                     Objects.requireNonNull(
-                            ListItem.class.getResource("/view/fileBrowserView.fxml")));
+                            FileItem.class.getResource("/view/fileBrowserView.fxml")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,11 +47,12 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         loadFXML();
         getChildren().add(pane);
         pathLabel = (Label) pane.lookup("#currentPath");
-        listView = (ItemListView) pane.lookup("#listView");
+        listView = (FileItemListView) pane.lookup("#listView");
         Button home = (Button) pane.lookup("#home");
+        totalProgress = (AnimatedProgressBar) pane.lookup("#totalProgress");
 
         root = Paths.get(".").toAbsolutePath();
-        listItemPool = new ListItemPool();
+        fileItemPool = new FileItemPool();
 
         pathLabel.setText(root.toString());
         currentPath = root;
@@ -54,7 +60,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
         listView.setOnMouseClicked(event -> {
             if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() > 1) {
-                ListItem item = listView.getSelectionModel().getSelectedItem();
+                FileItem item = listView.getSelectionModel().getSelectedItem();
                 if (item != null) {
                     changeDirectory(item.getPath());
                 }
@@ -62,13 +68,22 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         });
         listView.setOnKeyPressed(event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
-                ListItem item = listView.getSelectionModel().getSelectedItem();
+                FileItem item = listView.getSelectionModel().getSelectedItem();
                 if (item != null) {
                     changeDirectory(item.getPath());
                 }
+            } else if (event.getCode().equals(KeyCode.F5)) {
+                refreshView();
+            } else if (event.getCode().equals(KeyCode.DELETE)) {
+
             }
         });
         home.setOnAction(event -> changeDirectory(root));
+    }
+
+    @Override
+    public void refreshView() {
+        changeDirectory(currentPath);
     }
 
     @Override
@@ -89,28 +104,68 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     @Override
     public void updateListView(String[] files) {
         Platform.runLater(() -> {
-            List<ListItem> items = listView.getItems();
+            List<FileItem> items = listView.getItems();
             items.clear();
-            listItemPool.freeAll();
+            fileItemPool.freeAll();
             for (int i = 0; i <= files.length - 2; i += 2) {
-                items.add(listItemPool.obtain(files[i], files[i + 1]));
+                items.add(fileItemPool.obtain(files[i], files[i + 1]));
             }
         });
     }
 
     @Override
     public List<Path> getSelectedFilePaths() {
-        List<Path> list = listView.getSelectionModel().getSelectedItems()
+        return listView
+                .getSelectionModel()
+                .getSelectedItems()
                 .stream()
-                .map(ListItem::getPath)
+                .filter(fileItem -> fileItem.progressBar.getProgress() <= 0)
+                .map(FileItem::getPath)
                 .filter((p) -> !p.endsWith(".."))
                 .collect(Collectors.toList());
-
-        return list;
     }
 
     @Override
     public Path getCurrentDirectory() {
         return currentPath;
+    }
+
+    @Override
+    public void setProgressService(FileTransferProgressService progressService) {
+        this.progressService = progressService;
+    }
+
+    @Override
+    public void startProgressAnimation(String... args) {
+        totalProgress.startAnimation();
+    }
+
+    protected boolean updateProgress() {
+        List<Path> jobs = progressService.getTransferList();
+        boolean anyTransferCompleted = false;
+        for (Path job : jobs) {
+            float progress = progressService.progress(job);
+            if (progress >= 1) {
+                anyTransferCompleted = true;
+            }
+            for (FileItem item : listView.getItems()) {
+                if (job.equals(item.getPath())) {
+                    item.setProgress(progress);
+                    break;
+                }
+            }
+        }
+        return anyTransferCompleted;
+    }
+
+    @Override
+    public boolean handleAnimation(long now) {
+        if (progressService == null) {
+            Logger.warning("progress service not set");
+            return false;
+        }
+        float total = progressService.totalProgress();
+        totalProgress.setProgress(total);
+        return updateProgress();
     }
 }

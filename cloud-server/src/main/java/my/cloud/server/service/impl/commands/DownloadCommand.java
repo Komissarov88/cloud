@@ -41,7 +41,7 @@ public class DownloadCommand implements CommandService {
         String key = command.getArgs()[0];
         String clientJobKey = command.getArgs()[1];
 
-        Path path = Factory.getFileTransferAuthService().getPathIfValid(key);
+        Path path = Factory.getFileTransferAuthService().getTransferIfValid(key).destination;
         if (path != null) {
             ChunkedFile cf;
             if ((cf = getChunkedFile(path.toFile())) == null) {

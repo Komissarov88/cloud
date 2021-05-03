@@ -1,6 +1,7 @@
 package files.service;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface FileTransferProgressService {
 
@@ -8,5 +9,6 @@ public interface FileTransferProgressService {
     void increment(Path path, int transferred);
     float totalProgress();
     float progress(Path path);
+    List<Path> getTransferList();
     void remove(Path path);
 }

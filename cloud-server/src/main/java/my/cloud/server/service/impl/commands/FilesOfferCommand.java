@@ -51,7 +51,7 @@ public class FilesOfferCommand implements CommandService {
                 continue;
             }
 
-            String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(file.toPath(), ctx.channel());
+            String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(null, file.toPath(), ctx.channel());
 
             ctx.writeAndFlush(
                     new Command(CommandCode.UPLOAD_POSSIBLE,

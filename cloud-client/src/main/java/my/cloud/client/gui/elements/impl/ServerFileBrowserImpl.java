@@ -24,7 +24,6 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
         super.updateListView(files);
         currentPath = Paths.get(files[0]).getParent();
 
-
         String pathName;
         if (currentPath == null) {
             pathName = "root";

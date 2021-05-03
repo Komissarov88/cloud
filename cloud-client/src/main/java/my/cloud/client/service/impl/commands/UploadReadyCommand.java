@@ -39,7 +39,7 @@ public class UploadReadyCommand implements CommandService {
         }
 
         ChunkedFile cf;
-        Path path = Factory.getFileTransferAuthService().getPathIfValid(command.getArgs()[0]);
+        Path path = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]).destination;
         if (path == null || (cf = getChunkedFile(path.toFile())) == null) {
             Logger.warning("cant read file");
             ctx.close();

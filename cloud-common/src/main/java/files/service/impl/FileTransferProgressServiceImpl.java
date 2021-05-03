@@ -4,8 +4,9 @@ import files.service.FileTransferProgressService;
 import utils.Logger;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FileTransferProgressServiceImpl implements FileTransferProgressService {
@@ -35,19 +36,11 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
 
     @Override
     public void increment(Path path, int transferred) {
-
-        AtomicInteger incremented = new AtomicInteger(0);
-        progressMap.forEach((key, val) -> {
-            if (path.startsWith(key)) {
-                val.transferred.addAndGet(transferred);
-                incremented.addAndGet(1);
-            }
-        });
-
-        if (incremented.get() == 0) {
+        Progress p = progressMap.get(path);
+        if (p != null) {
+            p.transferred.addAndGet(transferred);
+        } else {
             Logger.warning("no such transfer: " + path);
-        } else if (incremented.get() > 1) {
-            Logger.error("multiple progress increment: " + path);
         }
     }
 
@@ -57,7 +50,16 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
         if (progress == null) {
             return -1;
         }
+        if (progress.transferred.get() >= progress.size) {
+            progressMap.remove(path);
+            return 1;
+        }
         return (progress.transferred.floatValue()) / (float) (progress.size);
+    }
+
+    @Override
+    public List<Path> getTransferList() {
+        return new ArrayList<>(progressMap.keySet());
     }
 
     @Override

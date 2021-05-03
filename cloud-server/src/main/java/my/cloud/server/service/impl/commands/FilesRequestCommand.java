@@ -20,14 +20,19 @@ public class FilesRequestCommand implements CommandService {
     private void sendRequest(ChannelHandlerContext ctx, File file, String clientDownloadFolder) {
         List<File> files = PathUtils.getFilesListRecursively(file.toPath());
         long size = PathUtils.getSize(files);
-        String[] response = new String[files.size() * 2 + 4];
+        String[] response = new String[files.size() * 3 + 4];
         response[0] = String.valueOf(size); // total size
         response[1] = String.valueOf(files.size()); // number of files
         response[2] = clientDownloadFolder;
-        int i = 3;
+
+        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+        response[3] = rootUserPath.relativize(file.getParentFile().toPath()).toString(); // origin folder
+
+        int i = 4;
         for (File f : files) {
-            response[i++] = Factory.getFileTransferAuthService().add(f.toPath(), ctx.channel());
+            response[i++] = Factory.getFileTransferAuthService().add(null, f.toPath(), ctx.channel());
             response[i++] = file.getParentFile().toPath().relativize(f.toPath()).toString();
+            response[i++] = String.valueOf(file.length());
         }
         ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_POSSIBLE, response));
     }
