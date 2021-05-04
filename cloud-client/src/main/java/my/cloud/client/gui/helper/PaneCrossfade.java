@@ -64,4 +64,8 @@ public class PaneCrossfade extends AnimationTimer {
             stop();
         }
     }
+
+    public boolean onA() {
+        return firstToSecond;
+    }
 }

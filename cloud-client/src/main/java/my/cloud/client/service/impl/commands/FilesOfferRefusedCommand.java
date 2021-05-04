@@ -3,6 +3,7 @@ package my.cloud.client.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
+import files.domain.Transfer;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
 
@@ -14,7 +15,8 @@ public class FilesOfferRefusedCommand implements CommandService {
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
         for (int i = 0; i < command.getArgs().length; i++) {
-            Factory.getFileTransferAuthService().remove(command.getArgs()[i]);
+            Transfer t = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[i]);
+            Factory.getUploadProgressService().remove(t.destination);
         }
     }
 

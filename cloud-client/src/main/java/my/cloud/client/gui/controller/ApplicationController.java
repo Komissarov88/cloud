@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 public class ApplicationController implements Initializable {
 
     public NetworkService networkService;
-    public AnimationTimer timer;
     public VBox authForm;
     public FileBrowser clientListView;
     public FileBrowser serverListView;
@@ -38,11 +37,16 @@ public class ApplicationController implements Initializable {
         networkService = Factory.getNetworkService();
         networkService.setCommandCodeListener(CommandCode.SUCCESS, this::onAuthenticationSuccess);
         networkService.setCommandCodeListener(CommandCode.LS, serverListView::updateListView);
-        networkService.setCommandCodeListener(CommandCode.DOWNLOAD_POSSIBLE, serverListView::startProgressAnimation);
+        networkService.setCommandCodeListener(CommandCode.DOWNLOAD_POSSIBLE, this::startProgressAnimation);
+        networkService.setCommandCodeListener(CommandCode.UPLOAD_POSSIBLE, this::startProgressAnimation);
         clientListView.setProgressService(Factory.getUploadProgressService());
         serverListView.setProgressService(Factory.getDownloadProgressService());
 
-        networkService.setOnChannelInactive(() -> authViewToServerViewTransition.start());
+        networkService.setOnChannelInactive(() -> {
+            if (!authViewToServerViewTransition.onA()) {
+                authViewToServerViewTransition.start();
+            }
+        });
 
         setupGUI();
     }
@@ -51,6 +55,7 @@ public class ApplicationController implements Initializable {
         authViewToServerViewTransition = new PaneCrossfade(authForm, serverListPane, 15);
         clientListView.changeDirectory(Paths.get("."));
         progressAnimation = new AnimationTimer() {
+
             @Override
             public void handle(long now) {
                 if (clientListView.handleAnimation(now)) {
@@ -59,19 +64,25 @@ public class ApplicationController implements Initializable {
                 if (serverListView.handleAnimation(now)) {
                     clientListView.refreshView();
                 }
-                if (Math.abs(Factory.getUploadProgressService().totalProgress()) >= 1
-                        && Math.abs(Factory.getDownloadProgressService().totalProgress()) >= 1
+
+                if (Factory.getUploadProgressService().getTransferList().size() == 0
                         && Factory.getDownloadProgressService().getTransferList().size() == 0) {
                     stop();
                 }
+                Logger.info("anim");
             }
 
             @Override
             public void start() {
                 clientListView.startProgressAnimation();
+                serverListView.startProgressAnimation();
                 super.start();
             }
         };
+    }
+
+    public void startProgressAnimation(String[] args) {
+        progressAnimation.start();
     }
 
     public void shutdown() {
@@ -85,7 +96,6 @@ public class ApplicationController implements Initializable {
             for (Path downloadFile : downloadFiles) {
                 networkService.downloadFile(downloadFile, clientListView.getCurrentDirectory());
             }
-            progressAnimation.start();
         }
     }
 
@@ -95,7 +105,6 @@ public class ApplicationController implements Initializable {
             for (Path uploadFile : uploadFiles) {
                 networkService.uploadFile(uploadFile.toFile(), serverListView.getCurrentDirectory());
             }
-            progressAnimation.start();
         }
     }
 
@@ -129,6 +138,4 @@ public class ApplicationController implements Initializable {
         shutdown();
         Platform.exit();
     }
-
-
 }

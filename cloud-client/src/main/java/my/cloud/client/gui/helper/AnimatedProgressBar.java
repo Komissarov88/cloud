@@ -35,7 +35,7 @@ public class AnimatedProgressBar extends ProgressBar {
             if (opacity > 0) {
                 opacityProperty().set(opacity - ANIM_SPEED);
             } else {
-                setProgress(-1);
+                setProgress(0);
                 animationTimer.stop();
             }
         }
