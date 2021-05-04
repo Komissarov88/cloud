@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import my.cloud.client.gui.helper.AnimatedProgressBar?>
+<?import my.cloud.client.gui.elements.impl.AnimatedProgressBar?>
 <AnchorPane id="rootPane" xmlns="http://javafx.com/javafx/8">
 
     <HBox alignment="CENTER" AnchorPane.leftAnchor="0">

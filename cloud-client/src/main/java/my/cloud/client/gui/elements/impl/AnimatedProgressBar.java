@@ -1,11 +1,11 @@
-package my.cloud.client.gui.helper;
+package my.cloud.client.gui.elements.impl;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.control.ProgressBar;
 
 public class AnimatedProgressBar extends ProgressBar {
 
-    final double ANIM_SPEED = 5d / 60d;
+    private final double ANIM_SPEED = 5d / 60d;
 
     private final AnimationTimer animationTimer = new AnimationTimer() {
         @Override
@@ -14,30 +14,29 @@ public class AnimatedProgressBar extends ProgressBar {
         }
     };
 
-    public void reset() {
-        setProgress(0);
-        opacityProperty().set(0);
-        animationTimer.stop();
-    }
-
     public void startAnimation() {
         animationTimer.start();
     }
 
     private void opacityHandle() {
         double opacity = opacityProperty().get();
-        double progress = progressProperty().get();
-        if (progress >= 0 && progress < 1) {
-            if (opacity < 1) {
+
+        if (Math.abs(getProgress()) < 1) {
+            if (opacityProperty().get() < 1) {
                 opacityProperty().set(opacity + ANIM_SPEED);
             }
         } else {
-            if (opacity > 0) {
+            if (opacityProperty().get() > 0) {
                 opacityProperty().set(opacity - ANIM_SPEED);
             } else {
-                setProgress(0);
                 animationTimer.stop();
+                reset();
             }
         }
+    }
+
+    public void reset() {
+        opacityProperty().set(0);
+        progressProperty().set(0);
     }
 }

@@ -41,6 +41,7 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
             p.transferred.addAndGet(transferred);
         } else {
             Logger.warning("no such transfer: " + path);
+            Logger.info("current jobs are: " + getTransferList());
         }
     }
 

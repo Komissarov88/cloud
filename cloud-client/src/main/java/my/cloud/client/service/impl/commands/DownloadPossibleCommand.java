@@ -46,6 +46,8 @@ public class DownloadPossibleCommand implements CommandService {
             return;
         }
 
+        Factory.getDownloadProgressService().add(origin, totalSize);
+
         int j = 4;
         for (int i = 0; i < filesNumber; i++) {
             String authKey = command.getArgs()[j++];
@@ -53,8 +55,7 @@ public class DownloadPossibleCommand implements CommandService {
             Path fileName = targetPath.resolve(serverPath);
             long fileSize = Long.parseLong(command.getArgs()[j++]);
 
-            Factory.getDownloadProgressService().add(origin.resolve(serverPath), fileSize);
-            String jobKey = Factory.getFileTransferAuthService().add(origin.resolve(serverPath), fileName, ctx.channel());
+            String jobKey = Factory.getFileTransferAuthService().add(origin, fileName, ctx.channel());
             Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, jobKey);
             Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand, null));
         }

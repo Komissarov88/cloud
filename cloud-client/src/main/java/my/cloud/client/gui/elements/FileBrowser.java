@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface FileBrowser {
 
-    void refreshView();
+    void refreshView(String... args);
     void changeDirectory(Path path);
     void updateListView(String[] files);
     Path getCurrentDirectory();

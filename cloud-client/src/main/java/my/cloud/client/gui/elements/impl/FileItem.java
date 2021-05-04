@@ -4,7 +4,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import my.cloud.client.gui.helper.AnimatedProgressBar;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -40,7 +39,6 @@ public class FileItem extends VBox {
 
         setPath(path);
         this.size.setText(size);
-
     }
 
     public void setPath(String path) {

@@ -47,6 +47,13 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
+    public void removeFile(List<Path> path) {
+        for (Path toDelete : path) {
+            sendCommand(new Command(CommandCode.REMOVE_FILE, toDelete.toString()));
+        }
+    }
+
+    @Override
     public void connect(String login, String password) {
         connect(login, password, CommandCode.AUTH);
     }
@@ -76,7 +83,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
         Path folderToTransfer = file.toPath();
         int i = 1;
         for (File f : files) {
-            args[i++] = Factory.getFileTransferAuthService().add(null, f.toPath(), mainConnection.getChannel());
+            args[i++] = Factory.getFileTransferAuthService().add(file.toPath(), f.toPath(), mainConnection.getChannel());
             Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
             args[i++] = serverUploadDirectory.resolve(serverPath).toString();
         }

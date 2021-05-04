@@ -1,10 +1,13 @@
 package my.cloud.client.gui.elements.impl;
 
 import javafx.application.Platform;
+import javafx.scene.control.ButtonType;
 import my.cloud.client.factory.Factory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 
 public class ServerFileBrowserImpl extends FileBrowserImpl {
 
@@ -13,6 +16,19 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
         root = Paths.get("/");
         currentPath = root;
     }
+
+    @Override
+    protected boolean deleteConfirm() {
+        alert.setText(getSelectedFilePaths());
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.get() == ButtonType.OK;
+    }
+
+    @Override
+    protected void delete(List<Path> paths) {
+        Factory.getNetworkService().removeFile(paths);
+    }
+
 
     @Override
     public void changeDirectory(Path path) {

@@ -3,15 +3,13 @@ package my.cloud.client.gui.elements.impl;
 import files.service.FileTransferProgressService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.SelectionMode;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import my.cloud.client.gui.elements.FileBrowser;
-import my.cloud.client.gui.helper.AnimatedProgressBar;
+import org.apache.commons.io.FileUtils;
 import utils.Logger;
 import utils.PathUtils;
 
@@ -20,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FileBrowserImpl extends AnchorPane implements FileBrowser {
@@ -32,6 +31,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     private final AnimatedProgressBar totalProgress;
     private final FileItemPool fileItemPool;
     protected FileTransferProgressService progressService;
+    protected DeleteAlert alert;
 
     private void loadFXML() {
         try {
@@ -75,14 +75,49 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             } else if (event.getCode().equals(KeyCode.F5)) {
                 refreshView();
             } else if (event.getCode().equals(KeyCode.DELETE)) {
-
+                if (deleteConfirm()) {
+                    delete(getSelectedFilePaths());
+                }
             }
         });
         home.setOnAction(event -> changeDirectory(root));
+
+        createContextMenu();
+
+        alert = new DeleteAlert();
+    }
+
+    protected boolean deleteConfirm() {
+        alert.setText(getSelectedFilePaths());
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.get() == ButtonType.OK;
+    }
+
+    protected void delete(List<Path> paths) {
+        for (Path path : paths) {
+            if (FileUtils.deleteQuietly(path.toFile())) {
+                refreshView();
+            }
+        }
+    }
+
+    private void createContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem menuItem1 = new MenuItem("Remove");
+
+        contextMenu.getItems().add(menuItem1);
+        menuItem1.setOnAction((event) -> {
+            if (deleteConfirm()) {
+                delete(getSelectedFilePaths());
+            }
+        });
+
+        listView.setContextMenu(contextMenu);
     }
 
     @Override
-    public void refreshView() {
+    public void refreshView(String... args) {
         changeDirectory(currentPath);
     }
 
@@ -137,11 +172,16 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
     @Override
     public void startProgressAnimation(String... args) {
-        totalProgress.startAnimation();
+        if (progressService.getTransferList().size() > 0) {
+            totalProgress.startAnimation();
+        }
     }
 
-    protected boolean updateProgress() {
+    private boolean updateProgress() {
         List<Path> jobs = progressService.getTransferList();
+        if (jobs.size() == 0) {
+            return false;
+        }
         boolean anyTransferCompleted = false;
         for (Path job : jobs) {
             float progress = progressService.progress(job);
@@ -149,12 +189,13 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
                 anyTransferCompleted = true;
             }
             for (FileItem item : listView.getItems()) {
-                if (job.equals(item.getPath())) {
+                if (item.getPath().equals(job)) {
                     item.setProgress(progress);
                     break;
                 }
             }
         }
+        totalProgress.setProgress(progressService.totalProgress());
         return anyTransferCompleted;
     }
 
@@ -164,8 +205,6 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             Logger.warning("progress service not set");
             return false;
         }
-        float total = progressService.totalProgress();
-        totalProgress.setProgress(total);
         return updateProgress();
     }
 }

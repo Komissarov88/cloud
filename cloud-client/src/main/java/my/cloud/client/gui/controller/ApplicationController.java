@@ -37,6 +37,7 @@ public class ApplicationController implements Initializable {
         networkService = Factory.getNetworkService();
         networkService.setCommandCodeListener(CommandCode.SUCCESS, this::onAuthenticationSuccess);
         networkService.setCommandCodeListener(CommandCode.LS, serverListView::updateListView);
+        networkService.setCommandCodeListener(CommandCode.REFRESH_VIEW, serverListView::refreshView);
         networkService.setCommandCodeListener(CommandCode.DOWNLOAD_POSSIBLE, this::startProgressAnimation);
         networkService.setCommandCodeListener(CommandCode.UPLOAD_POSSIBLE, this::startProgressAnimation);
         clientListView.setProgressService(Factory.getUploadProgressService());
@@ -65,11 +66,10 @@ public class ApplicationController implements Initializable {
                     clientListView.refreshView();
                 }
 
-                if (Factory.getUploadProgressService().getTransferList().size() == 0
-                        && Factory.getDownloadProgressService().getTransferList().size() == 0) {
+                if (Math.abs(Factory.getUploadProgressService().totalProgress()) >= 1
+                        && Math.abs(Factory.getDownloadProgressService().totalProgress()) >= 1) {
                     stop();
                 }
-                Logger.info("anim");
             }
 
             @Override

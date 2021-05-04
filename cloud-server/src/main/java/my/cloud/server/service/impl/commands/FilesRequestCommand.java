@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class FilesRequestCommand implements CommandService {
 
-    private void sendRequest(ChannelHandlerContext ctx, File file, String clientDownloadFolder) {
-        List<File> files = PathUtils.getFilesListRecursively(file.toPath());
+    private void sendRequest(ChannelHandlerContext ctx, File requestFile, String clientDownloadFolder) {
+        List<File> files = PathUtils.getFilesListRecursively(requestFile.toPath());
         long size = PathUtils.getSize(files);
         String[] response = new String[files.size() * 3 + 4];
         response[0] = String.valueOf(size); // total size
@@ -26,13 +26,13 @@ public class FilesRequestCommand implements CommandService {
         response[2] = clientDownloadFolder;
 
         Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
-        response[3] = rootUserPath.relativize(file.getParentFile().toPath()).toString(); // origin folder
+        response[3] = rootUserPath.relativize(requestFile.toPath()).toString(); // origin folder
 
         int i = 4;
         for (File f : files) {
             response[i++] = Factory.getFileTransferAuthService().add(null, f.toPath(), ctx.channel());
-            response[i++] = file.getParentFile().toPath().relativize(f.toPath()).toString();
-            response[i++] = String.valueOf(file.length());
+            response[i++] = requestFile.getParentFile().toPath().relativize(f.toPath()).toString();
+            response[i++] = String.valueOf(requestFile.length());
         }
         ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_POSSIBLE, response));
     }

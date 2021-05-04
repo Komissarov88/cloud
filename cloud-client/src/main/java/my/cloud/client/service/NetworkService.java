@@ -5,11 +5,13 @@ import command.domain.CommandCode;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 
 public interface NetworkService {
 
     void uploadFile(File file, Path serverUploadDirectory);
+    void removeFile(List<Path> path);
     void downloadFile(Path file, Path clientDownloadDirectory);
     void closeConnection();
     boolean isConnected();
