@@ -6,7 +6,7 @@
 
 <?import my.cloud.client.gui.elements.impl.FileBrowserImpl?>
 <?import my.cloud.client.gui.elements.impl.ServerFileBrowserImpl?>
-<AnchorPane prefHeight="563.0" prefWidth="992.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane prefHeight="663.0" prefWidth="992.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="my.cloud.client.gui.controller.ApplicationController">
 
     <VBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">

@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import utils.Logger;
 import utils.PathUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +33,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     private final FileItemPool fileItemPool;
     protected FileTransferProgressService progressService;
     protected DeleteAlert alert;
+    protected Button rootBtn;
 
     private void loadFXML() {
         try {
@@ -48,7 +50,8 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         getChildren().add(pane);
         pathLabel = (Label) pane.lookup("#currentPath");
         listView = (FileItemListView) pane.lookup("#listView");
-        Button home = (Button) pane.lookup("#home");
+        Button homeBtn = (Button) pane.lookup("#home");
+        rootBtn = (Button) pane.lookup("#root");
         totalProgress = (AnimatedProgressBar) pane.lookup("#totalProgress");
 
         root = Paths.get(".").toAbsolutePath();
@@ -78,9 +81,23 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
                 if (deleteConfirm()) {
                     delete(getSelectedFilePaths());
                 }
+            } else if (event.getCode().equals(KeyCode.BACK_SPACE)) {
+                changeDirectory(listView.getItems().get(0).getPath());
             }
         });
-        home.setOnAction(event -> changeDirectory(root));
+        homeBtn.setOnAction(event -> {
+            changeDirectory(root);
+            rootBtn.setText(root.getRoot().toString());
+        });
+
+        rootBtn.setText(root.getRoot().toString());
+        rootBtn.setOnAction(event -> {
+            File res = new RootChoiceDialog().getRoot();
+            if (res != null) {
+                rootBtn.setText(res.toString());
+                changeDirectory(res.toPath());
+            }
+        });
 
         createContextMenu();
 
@@ -90,7 +107,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected boolean deleteConfirm() {
         alert.setText(getSelectedFilePaths());
         Optional<ButtonType> result = alert.showAndWait();
-        return result.get() == ButtonType.OK;
+        return result.orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 
     protected void delete(List<Path> paths) {
@@ -104,10 +121,13 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     private void createContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
 
-        MenuItem menuItem1 = new MenuItem("Remove");
+        MenuItem delete = new MenuItem("Delete");
+        MenuItem rename = new MenuItem("Rename");
 
-        contextMenu.getItems().add(menuItem1);
-        menuItem1.setOnAction((event) -> {
+        contextMenu.getItems().add(delete);
+        contextMenu.getItems().add(rename);
+
+        delete.setOnAction((event) -> {
             if (deleteConfirm()) {
                 delete(getSelectedFilePaths());
             }
@@ -121,6 +141,20 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         changeDirectory(currentPath);
     }
 
+    protected void setCurrentPathLabel(Path path) {
+        if (path == null) {
+            pathLabel.setText("");
+            return;
+        }
+        int length = path.getNameCount();
+        int fromName = Math.max(length - 3, 0);
+        if (length == fromName) {
+            pathLabel.setText("");
+        } else {
+            pathLabel.setText((length > 3 ? "... " : "") + currentPath.subpath(fromName, length));
+        }
+    }
+
     @Override
     public void changeDirectory(Path path) {
         Path newPath = currentPath.resolve(path).normalize();
@@ -131,7 +165,7 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         String[] files = PathUtils.lsDirectory(newPath, null);
         if (files.length > 0) {
             currentPath = newPath;
-            pathLabel.setText(currentPath.getFileName() == null ? "" : currentPath.getFileName().toString());
+            setCurrentPathLabel(currentPath);
             updateListView(files);
         }
     }

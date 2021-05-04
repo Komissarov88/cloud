@@ -15,6 +15,8 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
         super();
         root = Paths.get("/");
         currentPath = root;
+        rootBtn.setDisable(true);
+        rootBtn.setManaged(false);
     }
 
     @Override
@@ -39,14 +41,9 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
     public void updateListView(String[] files) {
         super.updateListView(files);
         currentPath = Paths.get(files[0]).getParent();
-
-        String pathName;
+        Platform.runLater(() -> setCurrentPathLabel(currentPath));
         if (currentPath == null) {
-            pathName = "root";
             currentPath = root;
-        } else {
-            pathName = currentPath.getFileName().toString();
         }
-        Platform.runLater(() -> pathLabel.setText(pathName));
     }
 }

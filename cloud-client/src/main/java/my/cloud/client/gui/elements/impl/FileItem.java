@@ -2,6 +2,7 @@ package my.cloud.client.gui.elements.impl;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -15,6 +16,7 @@ public class FileItem extends VBox {
     private Pane pane;
     private final Label name;
     private final Label size;
+    private final Tooltip tooltip;
     AnimatedProgressBar progressBar;
 
     private Path path;
@@ -37,6 +39,9 @@ public class FileItem extends VBox {
         this.size = (Label) pane.lookup("#size");
         progressBar = (AnimatedProgressBar) pane.lookup("#progress");
 
+        tooltip = new Tooltip();
+        name.setTooltip(tooltip);
+
         setPath(path);
         this.size.setText(size);
     }
@@ -44,6 +49,7 @@ public class FileItem extends VBox {
     public void setPath(String path) {
         this.path = Paths.get(path);
         this.name.setText(this.path.getFileName().toString());
+        tooltip.setText(path);
     }
 
     public Path getPath() {
