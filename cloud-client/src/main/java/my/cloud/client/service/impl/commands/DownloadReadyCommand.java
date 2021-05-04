@@ -28,7 +28,7 @@ public class DownloadReadyCommand implements CommandService {
         fileReadHandler.setTransferListener(Factory.getDownloadProgressService()::increment);
 
         ctx.pipeline().replace("ObjectDecoder", "Reader", fileReadHandler);
-        ctx.pipeline().removeLast();
+        ctx.pipeline().remove("MainInboundHandler");
     }
 
     @Override

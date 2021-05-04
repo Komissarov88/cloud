@@ -16,6 +16,7 @@ public interface NetworkService {
     void connect(String login, String password);
     void submitConnection(Runnable connection);
     void setCommandCodeListener(CommandCode code, Consumer<String[]> listener);
+    void setOnChannelInactive(Runnable onChannelInactive);
     void requestFileList(String path);
     void requestRegistration(String login, String password);
     void sendCommand(Command command);

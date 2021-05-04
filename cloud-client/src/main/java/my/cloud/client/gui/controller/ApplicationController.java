@@ -42,6 +42,8 @@ public class ApplicationController implements Initializable {
         clientListView.setProgressService(Factory.getUploadProgressService());
         serverListView.setProgressService(Factory.getDownloadProgressService());
 
+        networkService.setOnChannelInactive(() -> authViewToServerViewTransition.start());
+
         setupGUI();
     }
 

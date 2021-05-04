@@ -56,7 +56,7 @@ public class DownloadPossibleCommand implements CommandService {
             Factory.getDownloadProgressService().add(origin.resolve(serverPath), fileSize);
             String jobKey = Factory.getFileTransferAuthService().add(origin.resolve(serverPath), fileName, ctx.channel());
             Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, jobKey);
-            Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand));
+            Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand, null));
         }
 
         if (consumer != null) {

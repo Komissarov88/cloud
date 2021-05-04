@@ -27,7 +27,7 @@ public class UploadPossibleCommand implements CommandService {
                 command.getArgs()[1]  //client job key
         };
 
-        CloudConnection uploadConnection = new CloudConnection(new Command(CommandCode.UPLOAD, args));
+        CloudConnection uploadConnection = new CloudConnection(new Command(CommandCode.UPLOAD, args), null);
         Factory.getNetworkService().submitConnection(uploadConnection);
     }
 

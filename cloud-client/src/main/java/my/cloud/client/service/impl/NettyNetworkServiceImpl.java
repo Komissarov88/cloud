@@ -19,6 +19,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private static NettyNetworkServiceImpl instance;
     private CloudConnection mainConnection;
     private ExecutorService executorService;
+    private Runnable onChannelInactive;
 
     private final int maximumConnections = Integer.parseInt(
             PropertiesReader.getProperty("client.connections.maximum"));
@@ -37,7 +38,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
-        mainConnection = new CloudConnection(new Command(code, login, password));
+        mainConnection = new CloudConnection(new Command(code, login, password), onChannelInactive);
         if (executorService != null) {
             executorService.shutdownNow();
         }
@@ -114,6 +115,11 @@ public class NettyNetworkServiceImpl implements NetworkService {
     @Override
     public void setCommandCodeListener(CommandCode code, Consumer<String[]> listener) {
         Factory.getCommandDictionaryService().getCommandService(code).setListener(listener);
+    }
+
+    @Override
+    public void setOnChannelInactive(Runnable onChannelInactive) {
+        this.onChannelInactive = onChannelInactive;
     }
 
     @Override
