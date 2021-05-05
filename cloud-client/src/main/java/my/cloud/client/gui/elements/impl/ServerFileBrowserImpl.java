@@ -51,6 +51,6 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
     @Override
     public void clearAllProgressBars() {
         super.clearAllProgressBars();
-        listView.getItems().clear();
+        Platform.runLater(() -> listView.getItems().clear());
     }
 }

@@ -6,6 +6,7 @@
 
 <?import my.cloud.client.gui.elements.impl.FileBrowserImpl?>
 <?import my.cloud.client.gui.elements.impl.ServerFileBrowserImpl?>
+<?import my.cloud.client.gui.elements.impl.TemporaryMessageLabel?>
 <AnchorPane prefHeight="663.0" prefWidth="992.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="my.cloud.client.gui.controller.ApplicationController">
 
@@ -74,7 +75,6 @@
                                     </HBox>
                                 </children>
                             </VBox>
-                            <Label fx:id="infoLabel" alignment="CENTER"/>
                         </VBox>
 
                     </AnchorPane>
@@ -88,6 +88,10 @@
                 <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
                     <Button mnemonicParsing="false" prefWidth="90" text="Download" onAction="#download"/>
                 </HBox>
+            </HBox>
+
+            <HBox alignment="CENTER">
+                <TemporaryMessageLabel fx:id="infoLabel" opacity="0" style="-fx-font-weight: bold; -fx-font-size: 16"/>
             </HBox>
 
         </children>

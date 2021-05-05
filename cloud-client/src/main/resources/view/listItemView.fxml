@@ -7,7 +7,7 @@
 <AnchorPane id="rootPane" xmlns="http://javafx.com/javafx/8">
 
     <AnimatedProgressBar id="progress" mouseTransparent="true" opacity="0.0" progress="0.0"
-                         style="-fx-padding: 0 0 0 5;" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
+                          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
     <HBox alignment="CENTER" AnchorPane.leftAnchor="0" HBox.hgrow="ALWAYS" maxWidth="350">
         <Label id="name" text="Name"/>
     </HBox>

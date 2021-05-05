@@ -6,6 +6,7 @@ import utils.Logger;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -97,6 +98,7 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
             progressMap.remove(path);
         } else {
             Logger.warning("no such transfer: " + path);
+            Logger.info(Arrays.toString(progressMap.keySet().stream().toArray()));
         }
     }
 

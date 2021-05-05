@@ -14,9 +14,12 @@ public class FilesOfferRefusedCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
-        for (int i = 0; i < command.getArgs().length; i++) {
+        if (command.getArgs().length > 0) {
+            Transfer t = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
+            Factory.getUploadProgressService().remove(t.origin);
+        }
+        for (int i = 1; i < command.getArgs().length; i++) {
             Transfer t = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[i]);
-            Factory.getUploadProgressService().remove(t.destination);
         }
     }
 

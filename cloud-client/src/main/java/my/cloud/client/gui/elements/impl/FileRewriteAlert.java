@@ -86,9 +86,6 @@ public class FileRewriteAlert extends Alert {
             thisSideList.removeAll(overlapping);
         }
 
-        System.out.println(thisSideList);
-        System.out.println(otherSideList);
-        System.out.println(overlapping);
         List<Path> transferList = new LinkedList<>(thisSideList);
         thisSideList = null;
         return transferList;

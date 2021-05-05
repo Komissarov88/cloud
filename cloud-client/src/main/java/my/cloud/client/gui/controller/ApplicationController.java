@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.gui.elements.FileBrowser;
 import my.cloud.client.gui.elements.impl.FileRewriteAlert;
+import my.cloud.client.gui.elements.impl.TemporaryMessageLabel;
 import my.cloud.client.gui.helper.PaneCrossfade;
 import my.cloud.client.service.NetworkService;
 import utils.Logger;
@@ -18,18 +19,20 @@ import utils.Logger;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class ApplicationController implements Initializable {
 
-    public NetworkService networkService;
+    private NetworkService networkService;
     public VBox authForm;
     public FileBrowser clientListView;
     public FileBrowser serverListView;
     public TextField loginTextField;
     public PasswordField passwordTextField;
     public Pane serverListPane;
+    public TemporaryMessageLabel infoLabel;
     private PaneCrossfade authViewToServerViewTransition;
     private AnimationTimer progressAnimation;
     private FileRewriteAlert fileRewriteAlert;
@@ -42,6 +45,7 @@ public class ApplicationController implements Initializable {
         networkService.setCommandCodeListener(CommandCode.REFRESH_VIEW, serverListView::refreshView);
         networkService.setCommandCodeListener(CommandCode.DOWNLOAD_POSSIBLE, this::startProgressAnimation);
         networkService.setCommandCodeListener(CommandCode.UPLOAD_POSSIBLE, this::startProgressAnimation);
+        networkService.setCommandCodeListener(CommandCode.FAIL, this::setInfoText);
         clientListView.setProgressService(Factory.getUploadProgressService());
         serverListView.setProgressService(Factory.getDownloadProgressService());
 
@@ -57,6 +61,10 @@ public class ApplicationController implements Initializable {
         });
 
         setupGUI();
+    }
+
+    private void setInfoText(String[] args) {
+        Platform.runLater(() -> infoLabel.updateText(Arrays.toString(args)));
     }
 
     private void setupGUI() {
@@ -126,6 +134,7 @@ public class ApplicationController implements Initializable {
 
     public void onAuthenticationSuccess(String[] args) {
         authViewToServerViewTransition.start();
+        setInfoText(args);
         networkService.requestFileList("/");
     }
 
