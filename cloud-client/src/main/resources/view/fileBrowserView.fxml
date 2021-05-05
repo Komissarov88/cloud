@@ -11,7 +11,7 @@
             <Button id="home" text="home"/>
             <Button id="root" text="/"/>
         </HBox>
-        <Label id="currentPath" maxWidth="200" text="/"/>
+        <Label id="currentPath" maxWidth="200" text="/" style="-fx-padding: 0 0 0 5;"/>
         <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
             <AnimatedProgressBar id="totalProgress" mouseTransparent="true" opacity="0.0" progress="0.0"
                                  style="-fx-padding: 0 0 0 5;"/>
