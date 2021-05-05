@@ -40,15 +40,16 @@ public class ApplicationController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         networkService = Factory.getNetworkService();
+
+        // Set callback on various commandCodes
         networkService.setCommandCodeListener(CommandCode.SUCCESS, this::onAuthenticationSuccess);
         networkService.setCommandCodeListener(CommandCode.LS, serverListView::updateListView);
         networkService.setCommandCodeListener(CommandCode.REFRESH_VIEW, serverListView::refreshView);
         networkService.setCommandCodeListener(CommandCode.DOWNLOAD_POSSIBLE, this::startProgressAnimation);
         networkService.setCommandCodeListener(CommandCode.UPLOAD_POSSIBLE, this::startProgressAnimation);
         networkService.setCommandCodeListener(CommandCode.FAIL, this::setInfoText);
-        clientListView.setProgressService(Factory.getUploadProgressService());
-        serverListView.setProgressService(Factory.getDownloadProgressService());
 
+        // Called on logout or force disconnect
         networkService.setOnChannelInactive(() -> {
             if (!authViewToServerViewTransition.onA()) {
                 authViewToServerViewTransition.start();
@@ -57,17 +58,28 @@ public class ApplicationController implements Initializable {
                 serverListView.clearAllProgressBars();
                 Factory.getUploadProgressService().clear();
                 Factory.getDownloadProgressService().clear();
+                Factory.getFileTransferAuthService().clean();
             }
         });
 
         setupGUI();
     }
 
+    /**
+     * Callback for showing info message on bottom of window
+     * @param args hold info message
+     */
     private void setInfoText(String[] args) {
         Platform.runLater(() -> infoLabel.updateText(Arrays.toString(args)));
     }
 
+    /**
+     * Setup file browsers, animation, and dialogs
+     */
     private void setupGUI() {
+        clientListView.setProgressService(Factory.getUploadProgressService());
+        serverListView.setProgressService(Factory.getDownloadProgressService());
+
         authViewToServerViewTransition = new PaneCrossfade(authForm, serverListPane, 15);
         clientListView.changeDirectory(Paths.get("."));
         fileRewriteAlert = new FileRewriteAlert();
@@ -97,15 +109,26 @@ public class ApplicationController implements Initializable {
         };
     }
 
+    /**
+     * Called when transfer job appears
+     * @param args ignored
+     */
     public void startProgressAnimation(String[] args) {
         progressAnimation.start();
     }
 
+    /**
+     * Close main connection
+     */
     public void shutdown() {
         Logger.info("shutdown");
         networkService.closeConnection();
     }
 
+    /**
+     * Get selected files from server browser and initiates download
+     * @param actionEvent ignored
+     */
     public void download(ActionEvent actionEvent) {
         fileRewriteAlert.reset(serverListView.getSelectedFilePaths(), true);
         List<Path> downloadFiles = fileRewriteAlert.getTransferList(clientListView.getCurrentFilePaths());
@@ -114,6 +137,10 @@ public class ApplicationController implements Initializable {
         }
     }
 
+    /**
+     * Get selected files from server browser and initiates upload
+     * @param actionEvent ignored
+     */
     public void upload(ActionEvent actionEvent) {
         fileRewriteAlert.reset(clientListView.getSelectedFilePaths(), false);
         List<Path> uploadFiles = fileRewriteAlert.getTransferList(serverListView.getCurrentFilePaths());
@@ -122,22 +149,38 @@ public class ApplicationController implements Initializable {
         }
     }
 
+    /**
+     * Login to server
+     * @param actionEvent ignored
+     */
     public void login(ActionEvent actionEvent) {
         networkService.login(loginTextField.getText().trim(), passwordTextField.getText().trim());
         passwordTextField.setText("");
     }
 
+    /**
+     * Request new user from server
+     * @param actionEvent ignored
+     */
     public void register(ActionEvent actionEvent) {
         networkService.requestRegistration(loginTextField.getText().trim(), passwordTextField.getText().trim());
         passwordTextField.setText("");
     }
 
+    /**
+     * Callback on successful authentication, starts animation of server browser appearance
+     * @param args hold success message
+     */
     public void onAuthenticationSuccess(String[] args) {
         authViewToServerViewTransition.start();
         setInfoText(args);
         networkService.requestFileList("/");
     }
 
+    /**
+     * Starts animation of authentication form appearance
+     * @param actionEvent ignored
+     */
     public void logout(ActionEvent actionEvent) {
         if (networkService.isConnected()) {
             authViewToServerViewTransition.start();
@@ -145,6 +188,10 @@ public class ApplicationController implements Initializable {
         }
     }
 
+    /**
+     * Close program
+     * @param actionEvent ignored
+     */
     public void quit(ActionEvent actionEvent) {
         shutdown();
         Platform.exit();

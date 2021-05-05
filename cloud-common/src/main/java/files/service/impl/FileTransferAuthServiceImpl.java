@@ -1,6 +1,6 @@
 package files.service.impl;
 
-import files.domain.Transfer;
+import files.domain.TransferId;
 import files.service.FileTransferAuthService;
 import io.netty.channel.Channel;
 import utils.HashOperator;
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FileTransferAuthServiceImpl implements FileTransferAuthService {
 
     private static FileTransferAuthServiceImpl instance;
-    private ConcurrentHashMap<String, Transfer> jobs;
+    private ConcurrentHashMap<String, TransferId> jobs;
 
     private FileTransferAuthServiceImpl() {
         jobs = new ConcurrentHashMap<>();
@@ -32,14 +32,14 @@ public class FileTransferAuthServiceImpl implements FileTransferAuthService {
     @Override
     public String add(Path origin, Path destination, Channel channel) {
         String hash = HashOperator.apply(channel.toString() + destination);
-        if (jobs.putIfAbsent(hash, new Transfer(origin, destination, channel)) != null) {
+        if (jobs.putIfAbsent(hash, new TransferId(origin, destination, channel)) != null) {
             Logger.warning("job already present");
         }
         return hash;
     }
 
     @Override
-    public Transfer getTransferIfValid(String key) {
+    public TransferId getTransferIfValid(String key) {
         return jobs.remove(key);
     }
 
@@ -48,8 +48,9 @@ public class FileTransferAuthServiceImpl implements FileTransferAuthService {
         jobs.remove(key);
     }
 
+    @Override
     public void clean() {
-        for (Map.Entry<String, Transfer> stringFileJobEntry : jobs.entrySet()) {
+        for (Map.Entry<String, TransferId> stringFileJobEntry : jobs.entrySet()) {
             if (!stringFileJobEntry.getValue().channel.isOpen()) {
                 jobs.remove(stringFileJobEntry.getKey());
             }

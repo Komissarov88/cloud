@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Called when client want to login
+ * Called on delete request
  */
 public class RemoveFileCommand implements CommandService {
 

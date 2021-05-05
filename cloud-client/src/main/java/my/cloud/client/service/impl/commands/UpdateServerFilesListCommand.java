@@ -8,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.function.Consumer;
 
 /**
- * Called when something goes wrong
+ * Hold list of files in directory, sent with LS command
  */
 public class UpdateServerFilesListCommand implements CommandService {
 

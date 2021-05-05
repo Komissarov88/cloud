@@ -4,7 +4,7 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
 import files.handler.FileReadHandlerWithCallback;
-import files.domain.Transfer;
+import files.domain.TransferId;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
 import utils.Logger;
@@ -23,8 +23,8 @@ public class DownloadReadyCommand implements CommandService {
             return;
         }
 
-        Transfer transfer = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
-        FileReadHandlerWithCallback fileReadHandler = new FileReadHandlerWithCallback(transfer);
+        TransferId transferId = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
+        FileReadHandlerWithCallback fileReadHandler = new FileReadHandlerWithCallback(transferId);
         fileReadHandler.setTransferListener(Factory.getDownloadProgressService()::increment);
 
         ctx.pipeline().replace("ObjectDecoder", "Reader", fileReadHandler);

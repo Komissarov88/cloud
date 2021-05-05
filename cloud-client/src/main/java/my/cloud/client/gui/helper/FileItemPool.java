@@ -1,8 +1,13 @@
-package my.cloud.client.gui.elements.impl;
+package my.cloud.client.gui.helper;
+
+import my.cloud.client.gui.elements.impl.FileItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pool of file items, needed to avoid loading of fxml resource on every FileItem instance creation
+ */
 public class FileItemPool {
 
     private final List<FileItem> activeObjects = new ArrayList<>();

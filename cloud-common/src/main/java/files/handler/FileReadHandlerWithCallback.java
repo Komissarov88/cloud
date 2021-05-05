@@ -1,7 +1,7 @@
 package files.handler;
 
 import files.domain.FileTransferStatus;
-import files.domain.Transfer;
+import files.domain.TransferId;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -20,13 +20,13 @@ import java.util.function.BiConsumer;
 public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
 
     public final OutputStream outputStream;
-    private final Transfer transfer;
+    private final TransferId transferId;
     private BiConsumer<Path, Integer> transferListener;
 
-    public FileReadHandlerWithCallback(Transfer transfer) {
+    public FileReadHandlerWithCallback(TransferId transferId) {
         OutputStream os = null;
-        Path path = transfer.destination;
-        this.transfer = transfer;
+        Path path = transferId.destination;
+        this.transferId = transferId;
         try {
             if (path.getParent() != null) {
                 Files.createDirectories(path.getParent());
@@ -52,7 +52,7 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         if (transferListener != null) {
-            transferListener.accept(transfer.origin, buf.readableBytes());
+            transferListener.accept(transferId.origin, buf.readableBytes());
         }
         buf.readBytes(outputStream, buf.readableBytes());
         buf.release();
@@ -64,8 +64,8 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
         outputStream.close();
         ctx.close();
         if (transferListener != null) {
-            transferListener.accept(transfer.origin, FileTransferStatus.INTERRUPTED.value);
+            transferListener.accept(transferId.origin, FileTransferStatus.INTERRUPTED.value);
         }
-        FileUtils.deleteQuietly(transfer.destination.toFile());
+        FileUtils.deleteQuietly(transferId.destination.toFile());
     }
 }

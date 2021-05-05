@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
 
 /**
- * Called on successful authentication
+ * Called when client cant accept files
  */
 public class DownloadRejectedCommand implements CommandService {
 

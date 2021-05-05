@@ -3,7 +3,7 @@ package my.cloud.client.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
-import files.domain.Transfer;
+import files.domain.TransferId;
 import files.handler.ChannelWriteHandlerWithCallback;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,14 +39,14 @@ public class UploadReadyCommand implements CommandService {
         }
 
         ChunkedFile cf;
-        Transfer transfer = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
-        if (transfer == null || (cf = getChunkedFile(transfer.destination.toFile())) == null) {
+        TransferId transferId = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
+        if (transferId == null || (cf = getChunkedFile(transferId.destination.toFile())) == null) {
             Logger.warning("cant read file");
             ctx.close();
             return;
         }
 
-        ChannelWriteHandlerWithCallback transferListener = new ChannelWriteHandlerWithCallback(transfer);
+        ChannelWriteHandlerWithCallback transferListener = new ChannelWriteHandlerWithCallback(transferId);
         transferListener.setTransferListener(Factory.getUploadProgressService()::increment);
 
         ctx.pipeline().replace("ObjectEncoder", "transferListener", transferListener);

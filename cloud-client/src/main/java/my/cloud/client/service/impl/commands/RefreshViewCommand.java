@@ -8,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.function.Consumer;
 
 /**
- * Called on successful authentication
+ * Called on transfer completes or file delete
  */
 public class RefreshViewCommand implements CommandService {
 

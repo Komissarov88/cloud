@@ -7,6 +7,9 @@ import javafx.scene.layout.GridPane;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Request delete confirmation from user
+ */
 public class DeleteAlert extends Alert {
 
     private final TextArea textArea;

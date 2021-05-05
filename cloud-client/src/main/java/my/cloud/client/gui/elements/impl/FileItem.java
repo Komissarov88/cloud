@@ -11,6 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+/**
+ * Line in file browser that hold file name size or dir prefix and progress bar in background
+ */
 public class FileItem extends VBox {
 
     private Pane pane;

@@ -3,6 +3,9 @@ package my.cloud.client.gui.elements.impl;
 import javafx.animation.AnimationTimer;
 import javafx.scene.control.ProgressBar;
 
+/**
+ * Progress bar, that show itself only when in has progress between 0 and 1
+ */
 public class AnimatedProgressBar extends ProgressBar {
 
     private final double ANIM_SPEED = 5d / 60d;

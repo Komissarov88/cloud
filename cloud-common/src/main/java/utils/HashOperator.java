@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Used form hashing passwords and FileJobs on server
+ * Used for hashing passwords and FileJobs on server
  */
 public class HashOperator {
 

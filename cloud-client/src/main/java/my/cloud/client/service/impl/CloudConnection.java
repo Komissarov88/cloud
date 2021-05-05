@@ -20,8 +20,8 @@ public class CloudConnection implements Runnable{
     private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));
     private final String ADDRESS = PropertiesReader.getProperty("server.address");
     private SocketChannel socketChannel;
-    private Command initialCommand;
-    private Runnable onChannelInactive;
+    private final Command initialCommand;
+    private final Runnable onChannelInactive;
 
     /**
      * @param initialCommand sends to server right after connection

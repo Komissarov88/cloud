@@ -13,6 +13,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Alert that checks if any files already on destination folder.
+ * Only names and not recursive
+ */
 public class FileRewriteAlert extends Alert {
 
     private ButtonType rewrite;
@@ -79,7 +83,6 @@ public class FileRewriteAlert extends Alert {
         }
 
         Optional<ButtonType> result = showAndWait();
-        System.out.println(result.get());
         if (result.get() == cancel) {
             return Collections.emptyList();
         } else if (result.get() == skip) {

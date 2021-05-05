@@ -35,6 +35,9 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private NettyNetworkServiceImpl() {
     }
 
+    /**
+     * Common part of login and register methods
+     */
     private void connect(String login, String password, CommandCode code) {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
@@ -89,11 +92,16 @@ public class NettyNetworkServiceImpl implements NetworkService {
             Logger.warning("Cant upload, server not connected");
             return;
         }
-        files.stream().map(Path::toFile).forEach(file -> {
+        files.stream()
+                .map(Path::toFile)
+                .forEach(file -> {
             if (!file.canRead()) {
                 return;
             }
             List<File> dirContent = PathUtils.getFilesListRecursively(file.toPath());
+            if (dirContent.isEmpty()) {
+                return;
+            }
             long size = PathUtils.getSize(dirContent);
 
             Factory.getUploadProgressService().add(file.toPath(), size);

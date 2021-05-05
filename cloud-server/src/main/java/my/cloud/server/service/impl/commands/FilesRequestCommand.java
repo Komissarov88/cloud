@@ -20,7 +20,7 @@ public class FilesRequestCommand implements CommandService {
     private void sendRequest(ChannelHandlerContext ctx, File requestFile, String clientDownloadFolder) {
         List<File> files = PathUtils.getFilesListRecursively(requestFile.toPath());
         long size = PathUtils.getSize(files);
-        String[] response = new String[files.size() * 3 + 4];
+        String[] response = new String[files.size() * 2 + 4];
         response[0] = String.valueOf(size); // total size
         response[1] = String.valueOf(files.size()); // number of files
         response[2] = clientDownloadFolder;
@@ -32,7 +32,6 @@ public class FilesRequestCommand implements CommandService {
         for (File f : files) {
             response[i++] = Factory.getFileTransferAuthService().add(null, f.toPath(), ctx.channel());
             response[i++] = requestFile.getParentFile().toPath().relativize(f.toPath()).toString();
-            response[i++] = String.valueOf(requestFile.length());
         }
         ctx.writeAndFlush(new Command(CommandCode.DOWNLOAD_POSSIBLE, response));
     }

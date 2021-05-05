@@ -11,7 +11,7 @@ import utils.Logger;
  */
 public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
-    private Runnable onChannelInactive;
+    private final Runnable onChannelInactive;
 
     public MainInboundHandler(Runnable onChannelInactive) {
         this.onChannelInactive = onChannelInactive;
@@ -38,7 +38,7 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        Logger.error(cause.getMessage());
         ctx.close();
     }
 }

@@ -13,6 +13,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import my.cloud.client.gui.elements.FileBrowser;
+import my.cloud.client.gui.helper.FileItemPool;
 import org.apache.commons.io.FileUtils;
 import utils.Logger;
 import utils.PathUtils;
@@ -26,6 +27,10 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Local file system file browser.
+ * Base class for server file browser.
+ */
 public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
     protected Path currentPath;
@@ -55,6 +60,8 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     public FileBrowserImpl() {
         loadFXML();
         getChildren().add(pane);
+
+        // fxml lookup
         pathLabel = (Label) pane.lookup("#currentPath");
         listView = (FileItemListView) pane.lookup("#listView");
         Button homeBtn = (Button) pane.lookup("#home");
@@ -70,11 +77,13 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         setupListView();
         createContextMenu();
 
+        // change directory to home action
         homeBtn.setOnAction(event -> {
             changeDirectory(root);
             rootBtn.setText(root.getRoot().toString());
         });
 
+        // chose root dialog
         rootBtn.setText(root.getRoot().toString());
         rootBtn.setOnAction(event -> {
             File res = new RootChoiceDialog().getRoot();
@@ -87,6 +96,10 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         alert = new DeleteAlert();
     }
 
+    /**
+     * Rises delete confirm dialog if needed
+     * @return true on confirm
+     */
     protected boolean deleteConfirm() {
         List<Path> list = getSelectedFilePaths();
         if (list.isEmpty()) {
@@ -97,6 +110,10 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         return result.orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 
+    /**
+     * Delete local file system files
+     * @param paths paths to delete
+     */
     protected void delete(List<Path> paths) {
         for (Path path : paths) {
             if (FileUtils.deleteQuietly(path.toFile())) {
@@ -105,6 +122,9 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         }
     }
 
+    /**
+     * Setup GUI and callbacks for file browser
+     */
     private void setupListView() {
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -134,6 +154,9 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         });
     }
 
+    /**
+     * Context menu setup
+     */
     private void createContextMenu() {
         contextMenu = new ContextMenu();
 
@@ -163,6 +186,10 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         changeDirectory(currentPath);
     }
 
+    /**
+     * Set current path label from last 3 names of path
+     * @param path any path
+     */
     protected void setCurrentPathLabel(Path path) {
         if (path == null) {
             pathLabel.setText("");
@@ -243,6 +270,10 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         }
     }
 
+    /**
+     * Find items that represent current transfer jobs and update it progress bars
+     * @return true if any job completed
+     */
     private boolean updateProgress() {
         List<Path> jobs = progressService.getTransferList();
         if (jobs.size() == 0) {

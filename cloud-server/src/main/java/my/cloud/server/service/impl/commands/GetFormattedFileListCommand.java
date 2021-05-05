@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * return files in server directory
+ * Return files list in server directory
  */
 public class GetFormattedFileListCommand implements CommandService {
 

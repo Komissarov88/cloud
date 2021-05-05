@@ -7,7 +7,7 @@ public enum FileTransferStatus {
 
     public final int value;
 
-    private FileTransferStatus(int value) {
+    FileTransferStatus(int value) {
         this.value = value;
     }
 }

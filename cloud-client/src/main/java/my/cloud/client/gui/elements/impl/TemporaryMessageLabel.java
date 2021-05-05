@@ -3,6 +3,9 @@ package my.cloud.client.gui.elements.impl;
 import javafx.animation.AnimationTimer;
 import javafx.scene.control.Label;
 
+/**
+ * Label that disappears after given time
+ */
 public class TemporaryMessageLabel extends Label {
 
     private final AnimationTimer animationTimer;
