@@ -8,10 +8,10 @@
       xmlns="http://javafx.com/javafx/8">
     <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 5 0;">
         <HBox id="buttons">
-            <Button id="home" style="-fx-padding: 0 5 5 5;" text="home"/>
-            <Button id="root" style="-fx-padding: 0 5 5 5;" text="/"/>
+            <Button id="home" text="home"/>
+            <Button id="root" text="/"/>
         </HBox>
-        <Label id="currentPath" maxWidth="200" style="-fx-padding: 0 5 5 5;" text="/"/>
+        <Label id="currentPath" maxWidth="200" text="/"/>
         <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
             <AnimatedProgressBar id="totalProgress" mouseTransparent="true" opacity="0.0" progress="0.0"
                                  style="-fx-padding: 0 0 0 5;"/>

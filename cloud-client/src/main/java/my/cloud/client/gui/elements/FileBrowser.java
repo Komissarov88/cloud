@@ -12,6 +12,7 @@ public interface FileBrowser {
     void updateListView(String[] files);
     Path getCurrentDirectory();
     List<Path> getSelectedFilePaths();
+    List<Path> getCurrentFilePaths();
     void setProgressService(FileTransferProgressService progressService);
     void startProgressAnimation(String... args);
     boolean handleAnimation(long now);

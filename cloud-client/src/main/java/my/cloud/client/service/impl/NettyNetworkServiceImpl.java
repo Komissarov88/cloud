@@ -4,6 +4,7 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.service.NetworkService;
+import utils.Logger;
 import utils.PathUtils;
 import utils.PropertiesReader;
 
@@ -54,46 +55,68 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void connect(String login, String password) {
-        connect(login, password, CommandCode.AUTH);
+    public void login(String login, String password) {
+        if (!isConnected()) {
+            connect(login, password, CommandCode.AUTH);
+        } else {
+            Logger.warning("server already connected");
+        }
     }
 
     @Override
     public void requestRegistration(String login, String password) {
-        connect(login, password, CommandCode.REGISTER_REQUEST);
+        if (!isConnected()) {
+            connect(login, password, CommandCode.REGISTER_REQUEST);
+        } else {
+            Logger.warning("server already connected");
+        }
     }
 
     @Override
-    public void downloadFile(Path file, Path clientDownloadDirectory) {
-        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString(), clientDownloadDirectory.toString()));
-    }
-
-    @Override
-    public void uploadFile(File file, Path serverUploadDirectory) {
-        if (!file.canRead()) {
+    public void downloadFile(Path clientDownloadDirectory, List<Path> files) {
+        if (!isConnected()) {
+            Logger.warning("Cant download, server not connected");
             return;
         }
-        List<File> files = PathUtils.getFilesListRecursively(file.toPath());
-        long size = PathUtils.getSize(files);
-
-        Factory.getUploadProgressService().add(file.toPath(), size);
-
-        String[] args = new String[files.size() * 2 + 1];
-        args[0] = String.valueOf(size);
-        Path folderToTransfer = file.toPath();
-        int i = 1;
-        for (File f : files) {
-            args[i++] = Factory.getFileTransferAuthService().add(file.toPath(), f.toPath(), mainConnection.getChannel());
-            Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
-            args[i++] = serverUploadDirectory.resolve(serverPath).toString();
+        for (Path file : files) {
+            mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString(), clientDownloadDirectory.toString()));
         }
-        mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
+    }
+
+    @Override
+    public void uploadFile(Path serverUploadDirectory, List<Path> files) {
+        if (!isConnected()) {
+            Logger.warning("Cant upload, server not connected");
+            return;
+        }
+        files.stream().map(Path::toFile).forEach(file -> {
+            if (!file.canRead()) {
+                return;
+            }
+            List<File> dirContent = PathUtils.getFilesListRecursively(file.toPath());
+            long size = PathUtils.getSize(dirContent);
+
+            Factory.getUploadProgressService().add(file.toPath(), size);
+
+            String[] args = new String[dirContent.size() * 2 + 1];
+            args[0] = String.valueOf(size);
+            Path folderToTransfer = file.toPath();
+            int i = 1;
+            for (File f : dirContent) {
+                args[i++] = Factory.getFileTransferAuthService().add(file.toPath(), f.toPath(), mainConnection.getChannel());
+                Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
+                args[i++] = serverUploadDirectory.resolve(serverPath).toString();
+            }
+            mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
+        });
     }
 
     @Override
     public void sendCommand(Command command) {
         if (isConnected()) {
             mainConnection.sendCommand(command);
+        } else {
+            Logger.warning("server not connected");
         }
     }
 

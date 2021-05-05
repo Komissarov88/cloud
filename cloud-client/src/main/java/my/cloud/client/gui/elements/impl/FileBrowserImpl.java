@@ -4,6 +4,9 @@ import files.service.FileTransferProgressService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
@@ -13,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import utils.Logger;
 import utils.PathUtils;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -34,6 +38,9 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected FileTransferProgressService progressService;
     protected DeleteAlert alert;
     protected Button rootBtn;
+    protected ContextMenu contextMenu;
+    protected MenuItem delete;
+    protected MenuItem open;
 
     private void loadFXML() {
         try {
@@ -59,6 +66,42 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
 
         pathLabel.setText(root.toString());
         currentPath = root;
+
+        setupListView();
+        createContextMenu();
+
+        homeBtn.setOnAction(event -> {
+            changeDirectory(root);
+            rootBtn.setText(root.getRoot().toString());
+        });
+
+        rootBtn.setText(root.getRoot().toString());
+        rootBtn.setOnAction(event -> {
+            File res = new RootChoiceDialog().getRoot();
+            if (res != null) {
+                rootBtn.setText(res.toString());
+                changeDirectory(res.toPath());
+            }
+        });
+
+        alert = new DeleteAlert();
+    }
+
+    protected boolean deleteConfirm() {
+        alert.setText(getSelectedFilePaths());
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.orElse(ButtonType.CANCEL) == ButtonType.OK;
+    }
+
+    protected void delete(List<Path> paths) {
+        for (Path path : paths) {
+            if (FileUtils.deleteQuietly(path.toFile())) {
+                refreshView();
+            }
+        }
+    }
+
+    private void setupListView() {
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         listView.setOnMouseClicked(event -> {
@@ -85,51 +128,26 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
                 changeDirectory(listView.getItems().get(0).getPath());
             }
         });
-        homeBtn.setOnAction(event -> {
-            changeDirectory(root);
-            rootBtn.setText(root.getRoot().toString());
-        });
-
-        rootBtn.setText(root.getRoot().toString());
-        rootBtn.setOnAction(event -> {
-            File res = new RootChoiceDialog().getRoot();
-            if (res != null) {
-                rootBtn.setText(res.toString());
-                changeDirectory(res.toPath());
-            }
-        });
-
-        createContextMenu();
-
-        alert = new DeleteAlert();
-    }
-
-    protected boolean deleteConfirm() {
-        alert.setText(getSelectedFilePaths());
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.orElse(ButtonType.CANCEL) == ButtonType.OK;
-    }
-
-    protected void delete(List<Path> paths) {
-        for (Path path : paths) {
-            if (FileUtils.deleteQuietly(path.toFile())) {
-                refreshView();
-            }
-        }
     }
 
     private void createContextMenu() {
-        ContextMenu contextMenu = new ContextMenu();
+        contextMenu = new ContextMenu();
 
-        MenuItem delete = new MenuItem("Delete");
-        MenuItem rename = new MenuItem("Rename");
+        open = new MenuItem("Open");
+        delete = new MenuItem("Delete");
 
-        contextMenu.getItems().add(delete);
-        contextMenu.getItems().add(rename);
+        contextMenu.getItems().addAll(open, delete);
 
         delete.setOnAction((event) -> {
             if (deleteConfirm()) {
                 delete(getSelectedFilePaths());
+            }
+        });
+        open.setOnAction(event -> {
+            try {
+                Desktop.getDesktop().open(listView.getSelectionModel().getSelectedItem().getPath().toFile());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
 
@@ -191,6 +209,16 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
                 .filter(fileItem -> fileItem.progressBar.getProgress() <= 0)
                 .map(FileItem::getPath)
                 .filter((p) -> !p.endsWith(".."))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Path> getCurrentFilePaths() {
+        return listView
+                .getItems()
+                .stream()
+                .skip(1)
+                .map(FileItem::getPath)
                 .collect(Collectors.toList());
     }
 

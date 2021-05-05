@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.gui.elements.FileBrowser;
+import my.cloud.client.gui.elements.impl.FileRewriteAlert;
 import my.cloud.client.gui.helper.PaneCrossfade;
 import my.cloud.client.service.NetworkService;
 import utils.Logger;
@@ -31,6 +32,7 @@ public class ApplicationController implements Initializable {
     public Pane serverListPane;
     private PaneCrossfade authViewToServerViewTransition;
     private AnimationTimer progressAnimation;
+    private FileRewriteAlert fileRewriteAlert;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -55,6 +57,7 @@ public class ApplicationController implements Initializable {
     private void setupGUI() {
         authViewToServerViewTransition = new PaneCrossfade(authForm, serverListPane, 15);
         clientListView.changeDirectory(Paths.get("."));
+        fileRewriteAlert = new FileRewriteAlert();
         progressAnimation = new AnimationTimer() {
 
             @Override
@@ -91,35 +94,29 @@ public class ApplicationController implements Initializable {
     }
 
     public void download(ActionEvent actionEvent) {
-        if (networkService.isConnected()) {
-            List<Path> downloadFiles = serverListView.getSelectedFilePaths();
-            for (Path downloadFile : downloadFiles) {
-                networkService.downloadFile(downloadFile, clientListView.getCurrentDirectory());
-            }
+        fileRewriteAlert.reset(serverListView.getSelectedFilePaths(), true);
+        List<Path> downloadFiles = fileRewriteAlert.getTransferList(clientListView.getCurrentFilePaths());
+        if (downloadFiles.size() > 0) {
+            networkService.downloadFile(clientListView.getCurrentDirectory(), downloadFiles);
         }
     }
 
     public void upload(ActionEvent actionEvent) {
-        if (networkService.isConnected()) {
-            List<Path> uploadFiles = clientListView.getSelectedFilePaths();
-            for (Path uploadFile : uploadFiles) {
-                networkService.uploadFile(uploadFile.toFile(), serverListView.getCurrentDirectory());
-            }
+        fileRewriteAlert.reset(clientListView.getSelectedFilePaths(), false);
+        List<Path> uploadFiles = fileRewriteAlert.getTransferList(serverListView.getCurrentFilePaths());
+        if (uploadFiles.size() > 0) {
+            networkService.uploadFile(serverListView.getCurrentDirectory(), uploadFiles);
         }
     }
 
     public void login(ActionEvent actionEvent) {
-        if (!networkService.isConnected()) {
-            networkService.connect(loginTextField.getText().trim(), passwordTextField.getText().trim());
-            passwordTextField.setText("");
-        }
+        networkService.login(loginTextField.getText().trim(), passwordTextField.getText().trim());
+        passwordTextField.setText("");
     }
 
     public void register(ActionEvent actionEvent) {
-        if (!networkService.isConnected()) {
-            networkService.requestRegistration(loginTextField.getText().trim(), passwordTextField.getText().trim());
-            passwordTextField.setText("");
-        }
+        networkService.requestRegistration(loginTextField.getText().trim(), passwordTextField.getText().trim());
+        passwordTextField.setText("");
     }
 
     public void onAuthenticationSuccess(String[] args) {

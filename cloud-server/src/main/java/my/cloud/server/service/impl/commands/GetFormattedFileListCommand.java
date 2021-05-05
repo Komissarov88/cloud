@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 /**
  * return files in server directory
  */
-public class ViewFilesInDirCommand implements CommandService {
+public class GetFormattedFileListCommand implements CommandService {
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -21,7 +21,7 @@ public class ViewFilesInDirCommand implements CommandService {
         if (command.getArgs().length != 1
                 || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
             ctx.writeAndFlush(new Command(CommandCode.FAIL,
-                    "wrong arguments, expected one directory and user to be logged in"));
+                    "wrong arguments, expected one directory"));
             return;
         }
 
@@ -29,6 +29,7 @@ public class ViewFilesInDirCommand implements CommandService {
         Path requestPath = Paths.get(rootUserPath.toString(), command.getArgs()[0]);
 
         if (!PathUtils.isPathsParentAndChild(rootUserPath, requestPath)) {
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
             return;
         }
 
@@ -42,5 +43,4 @@ public class ViewFilesInDirCommand implements CommandService {
     public CommandCode getCommandCode() {
         return CommandCode.LS;
     }
-
 }

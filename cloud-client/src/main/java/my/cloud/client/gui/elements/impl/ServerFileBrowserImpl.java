@@ -17,6 +17,7 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
         currentPath = root;
         rootBtn.setDisable(true);
         rootBtn.setManaged(false);
+        contextMenu.getItems().remove(open);
     }
 
     @Override

@@ -9,13 +9,13 @@ import java.util.List;
 
 public class DeleteAlert extends Alert {
 
-    private TextArea textArea;
+    private final TextArea textArea;
 
     public DeleteAlert() {
         super(Alert.AlertType.CONFIRMATION);
 
-        setTitle("Files remove");
-        setHeaderText("Confirm remove");
+        setTitle("Cloud");
+        setHeaderText("Confirm delete");
         setContentText("Files:");
 
         textArea = new TextArea();
