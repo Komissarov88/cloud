@@ -1,8 +1,12 @@
 package files.handler;
 
+import files.domain.FileTransferStatus;
+import files.domain.TransferId;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.commons.io.FileUtils;
+import utils.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,11 +20,13 @@ import java.util.function.BiConsumer;
 public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
 
     public final OutputStream outputStream;
-    private final Path path;
+    private final TransferId transferId;
     private BiConsumer<Path, Integer> transferListener;
 
-    public FileReadHandlerWithCallback(Path path) {
+    public FileReadHandlerWithCallback(TransferId transferId) {
         OutputStream os = null;
+        Path path = transferId.destination;
+        this.transferId = transferId;
         try {
             if (path.getParent() != null) {
                 Files.createDirectories(path.getParent());
@@ -30,7 +36,6 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
             e.printStackTrace();
         }
         outputStream = os;
-        this.path = path;
     }
 
     public void setTransferListener(BiConsumer<Path, Integer> transferListener) {
@@ -47,7 +52,7 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         if (transferListener != null) {
-            transferListener.accept(path, buf.readableBytes());
+            transferListener.accept(transferId.origin, buf.readableBytes());
         }
         buf.readBytes(outputStream, buf.readableBytes());
         buf.release();
@@ -55,8 +60,12 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        Logger.error(cause.getMessage());
         outputStream.close();
         ctx.close();
+        if (transferListener != null) {
+            transferListener.accept(transferId.origin, FileTransferStatus.INTERRUPTED.value);
+        }
+        FileUtils.deleteQuietly(transferId.destination.toFile());
     }
 }

@@ -30,7 +30,8 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        Logger.error(cause.getMessage());
         ctx.close();
+        Factory.getFileTransferAuthService().clean();
     }
 }

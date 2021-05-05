@@ -2,12 +2,20 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import my.cloud.client.gui.elements.impl.*?>
 
-<?import my.cloud.client.gui.elements.impl.ItemListView?>
-<VBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
-    <HBox alignment="CENTER_LEFT">
-        <Button id="home" text="home" style="-fx-padding: 0 5 5 5;"/>
-        <Label id="currentPath" style="-fx-padding: 0 5 5 5;" text="/" maxWidth="200"/>
+<VBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0"
+      xmlns="http://javafx.com/javafx/8">
+    <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 5 0;">
+        <HBox id="buttons">
+            <Button id="home" text="home"/>
+            <Button id="root" text="/"/>
+        </HBox>
+        <Label id="currentPath" maxWidth="200" text="/" style="-fx-padding: 0 0 0 5;"/>
+        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+            <AnimatedProgressBar id="totalProgress" mouseTransparent="true" opacity="0.0" progress="0.0"
+                                 style="-fx-padding: 0 0 0 5;"/>
+        </HBox>
     </HBox>
-    <ItemListView id="listView" VBox.vgrow="ALWAYS"/>
+    <FileItemListView id="listView" VBox.vgrow="ALWAYS" />
 </VBox>

@@ -8,9 +8,9 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.function.Consumer;
 
 /**
- * Called when something goes wrong
+ * Called on transfer completes or file delete
  */
-public class FailResponseCommand implements CommandService {
+public class RefreshViewCommand implements CommandService {
 
     private Consumer<String[]> consumer;
 
@@ -23,12 +23,11 @@ public class FailResponseCommand implements CommandService {
 
     @Override
     public CommandCode getCommandCode() {
-        return CommandCode.FAIL;
+        return CommandCode.REFRESH_VIEW;
     }
 
     @Override
     public void setListener(Consumer<String[]> consumer) {
         this.consumer = consumer;
     }
-
 }

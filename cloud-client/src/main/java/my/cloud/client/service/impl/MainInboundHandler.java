@@ -11,6 +11,12 @@ import utils.Logger;
  */
 public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
+    private final Runnable onChannelInactive;
+
+    public MainInboundHandler(Runnable onChannelInactive) {
+        this.onChannelInactive = onChannelInactive;
+    }
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         Logger.info("server connected");
@@ -19,6 +25,9 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Logger.info("server disconnected");
+        if (onChannelInactive != null) {
+            onChannelInactive.run();
+        }
     }
 
     @Override
@@ -29,7 +38,7 @@ public class MainInboundHandler extends SimpleChannelInboundHandler<Command> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        Logger.error(cause.getMessage());
         ctx.close();
     }
 }

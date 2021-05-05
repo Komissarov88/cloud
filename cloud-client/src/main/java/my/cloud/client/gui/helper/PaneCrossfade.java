@@ -3,6 +3,9 @@ package my.cloud.client.gui.helper;
 import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
 
+/**
+ * Back and forward opacity cross transition between two javafx panes
+ */
 public class PaneCrossfade extends AnimationTimer {
 
     private Pane first;
@@ -63,5 +66,9 @@ public class PaneCrossfade extends AnimationTimer {
         if (currentFrame >= animationLength) {
             stop();
         }
+    }
+
+    public boolean onA() {
+        return firstToSecond;
     }
 }

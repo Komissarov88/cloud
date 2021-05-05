@@ -12,6 +12,11 @@ public class PathUtils {
 
     private PathUtils() {}
 
+    /**
+     * Get list of all files in path
+     * @param path to look
+     * @return files
+     */
     public static List<File> getFilesListRecursively(Path path) {
         List<File> files = null;
         try {
@@ -26,12 +31,21 @@ public class PathUtils {
         return files;
     }
 
+    /**
+     * @param files to sum length
+     * @return total size
+     */
     public static long getSize(List<File> files) {
         return files.stream()
                 .mapToLong(File::length)
                 .sum();
     }
 
+    /**
+     * @param root path
+     * @param child path
+     * @return true if root is actually root
+     */
     public static boolean isPathsParentAndChild(Path root, Path child) {
         return child.normalize().startsWith(root);
     }
@@ -43,6 +57,12 @@ public class PathUtils {
         return root.relativize(path);
     }
 
+    /**
+     * Formatted list of directory content
+     * @param path to look
+     * @param root path to relativize from
+     * @return array of name and dir prefix or file size
+     */
     public static String[] lsDirectory(Path path, Path root) {
 
         final String DIR_PREFIX = "D";
@@ -78,8 +98,13 @@ public class PathUtils {
         return dirs.toArray(args);
     }
 
-    private static String getFileSize(File childFile) {
-        long size = childFile.length();
+    /**
+     * String representation of file size
+     * @param file to check
+     * @return formatted size
+     */
+    private static String getFileSize(File file) {
+        long size = file.length();
         final long KILOBYTE = 1024;
         final long MEGABYTE = 1_048_576;
         final long GIGABYTE = 1_073_741_824;

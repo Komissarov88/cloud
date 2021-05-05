@@ -21,6 +21,4 @@ public class MainApplication extends Application {
         primaryStage.setOnCloseRequest((event) -> controller.shutdown());
         primaryStage.show();
     }
-
-
 }

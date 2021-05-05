@@ -20,19 +20,21 @@ public class CloudConnection implements Runnable{
     private final int PORT = Integer.parseInt(PropertiesReader.getProperty("server.port"));
     private final String ADDRESS = PropertiesReader.getProperty("server.address");
     private SocketChannel socketChannel;
-    private Command initialCommand;
+    private final Command initialCommand;
+    private final Runnable onChannelInactive;
 
     /**
      * @param initialCommand sends to server right after connection
      */
-    public CloudConnection(Command initialCommand) {
+    public CloudConnection(Command initialCommand, Runnable onChannelInactive) {
         this.initialCommand = initialCommand;
+        this.onChannelInactive = onChannelInactive;
     }
 
     private void defaultPipeline(ChannelPipeline pipeline) {
         pipeline.addLast("ObjectEncoder", new ObjectEncoder());
         pipeline.addLast("ObjectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-        pipeline.addLast("MainInboundHandler", new MainInboundHandler());
+        pipeline.addLast("MainInboundHandler", new MainInboundHandler(onChannelInactive));
     }
 
     @Override

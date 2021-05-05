@@ -33,7 +33,7 @@ public class DownloadCommand implements CommandService {
 
         if (command.getArgs() == null
                 || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected transfer keys pair"));
             ctx.close();
             return;
         }
@@ -41,7 +41,7 @@ public class DownloadCommand implements CommandService {
         String key = command.getArgs()[0];
         String clientJobKey = command.getArgs()[1];
 
-        Path path = Factory.getFileTransferAuthService().getPathIfValid(key);
+        Path path = Factory.getFileTransferAuthService().getTransferIfValid(key).destination;
         if (path != null) {
             ChunkedFile cf;
             if ((cf = getChunkedFile(path.toFile())) == null) {
@@ -68,7 +68,7 @@ public class DownloadCommand implements CommandService {
                 e.printStackTrace();
             }
         } else {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "authentication fails"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "transfer channel authentication fails"));
             ctx.close();
         }
     }

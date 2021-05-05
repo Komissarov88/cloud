@@ -20,13 +20,19 @@ public class RegistrationRequestCommand implements CommandService {
     public void processCommand(Command command, ChannelHandlerContext ctx) {
 
         if (command.getArgs() == null || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected login password pair"));
             ctx.close();
             return;
         }
 
         String login = command.getArgs()[0];
         String password = command.getArgs()[1];
+
+        if (login.length() == 0 || password.length() == 0) {
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "login/password expected not empty"));
+            ctx.close();
+            return;
+        }
 
         if (Factory.getDbService().addUser(login, password)) {
             Factory.getServerService().subscribeUser(command.getArgs()[0], ctx.channel());
@@ -39,7 +45,7 @@ public class RegistrationRequestCommand implements CommandService {
 
             ctx.writeAndFlush(new Command(CommandCode.SUCCESS, "registered"));
         } else {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "registration fails"));
+            ctx.writeAndFlush(new Command(CommandCode.FAIL, "user already exists"));
             ctx.close();
         }
     }

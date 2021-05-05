@@ -4,11 +4,10 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import command.service.CommandService;
 import files.handler.FileReadHandlerWithCallback;
+import files.domain.TransferId;
 import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
 import utils.Logger;
-
-import java.nio.file.Path;
 
 /**
  * Called right before ChunkedWriteHandler on server side starts working
@@ -24,12 +23,12 @@ public class DownloadReadyCommand implements CommandService {
             return;
         }
 
-        Path path = Factory.getFileTransferAuthService().getPathIfValid(command.getArgs()[0]);
-        FileReadHandlerWithCallback fileReadHandler = new FileReadHandlerWithCallback(path);
+        TransferId transferId = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
+        FileReadHandlerWithCallback fileReadHandler = new FileReadHandlerWithCallback(transferId);
         fileReadHandler.setTransferListener(Factory.getDownloadProgressService()::increment);
 
         ctx.pipeline().replace("ObjectDecoder", "Reader", fileReadHandler);
-        ctx.pipeline().removeLast();
+        ctx.pipeline().remove("MainInboundHandler");
     }
 
     @Override

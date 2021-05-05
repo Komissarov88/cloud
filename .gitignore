@@ -1,6 +1,5 @@
 # Project exclude paths
 /.idea
-/server-storage/
 /gradle/
 /.gradle/
 *.iml
@@ -10,3 +9,4 @@
 /cloud-common/build/
 /cloud-client/build/
 /build/
+/cloud-server/server-storage/

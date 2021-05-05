@@ -8,10 +8,14 @@ import my.cloud.client.factory.Factory;
 import my.cloud.client.service.impl.CloudConnection;
 import utils.Logger;
 
+import java.util.function.Consumer;
+
 /**
  * Called when server sends client authentication key for upload channel
  */
 public class UploadPossibleCommand implements CommandService {
+
+    private Consumer<String[]> consumer;
 
     @Override
     public void processCommand(Command command, ChannelHandlerContext ctx) {
@@ -27,8 +31,12 @@ public class UploadPossibleCommand implements CommandService {
                 command.getArgs()[1]  //client job key
         };
 
-        CloudConnection uploadConnection = new CloudConnection(new Command(CommandCode.UPLOAD, args));
+        CloudConnection uploadConnection = new CloudConnection(new Command(CommandCode.UPLOAD, args), null);
         Factory.getNetworkService().submitConnection(uploadConnection);
+
+        if (consumer != null) {
+            consumer.accept(command.getArgs());
+        }
     }
 
     @Override
@@ -36,4 +44,8 @@ public class UploadPossibleCommand implements CommandService {
         return CommandCode.UPLOAD_POSSIBLE;
     }
 
+    @Override
+    public void setListener(Consumer<String[]> consumer) {
+        this.consumer = consumer;
+    }
 }

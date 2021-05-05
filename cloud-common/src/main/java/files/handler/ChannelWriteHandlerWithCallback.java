@@ -1,5 +1,6 @@
 package files.handler;
 
+import files.domain.TransferId;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -10,11 +11,11 @@ import java.util.function.BiConsumer;
 
 public class ChannelWriteHandlerWithCallback extends ChannelOutboundHandlerAdapter {
 
-    private final Path path;
+    private final TransferId transferId;
     private BiConsumer<Path, Integer> transferListener;
 
-    public ChannelWriteHandlerWithCallback(Path path) {
-        this.path = path;
+    public ChannelWriteHandlerWithCallback(TransferId transferId) {
+        this.transferId = transferId;
     }
 
     public void setTransferListener(BiConsumer<Path, Integer> transferListener) {
@@ -25,7 +26,7 @@ public class ChannelWriteHandlerWithCallback extends ChannelOutboundHandlerAdapt
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         if (transferListener != null) {
-            transferListener.accept(path, buf.readableBytes());
+            transferListener.accept(transferId.origin, buf.readableBytes());
         }
         ctx.write(msg, promise);
     }

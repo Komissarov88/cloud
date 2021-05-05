@@ -4,6 +4,7 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.service.NetworkService;
+import utils.Logger;
 import utils.PathUtils;
 import utils.PropertiesReader;
 
@@ -18,8 +19,8 @@ public class NettyNetworkServiceImpl implements NetworkService {
 
     private static NettyNetworkServiceImpl instance;
     private CloudConnection mainConnection;
-    private String login;
     private ExecutorService executorService;
+    private Runnable onChannelInactive;
 
     private final int maximumConnections = Integer.parseInt(
             PropertiesReader.getProperty("client.connections.maximum"));
@@ -34,12 +35,14 @@ public class NettyNetworkServiceImpl implements NetworkService {
     private NettyNetworkServiceImpl() {
     }
 
+    /**
+     * Common part of login and register methods
+     */
     private void connect(String login, String password, CommandCode code) {
         if (isConnected()) {
             throw new RuntimeException("Channel already open");
         }
-        this.login = login;
-        mainConnection = new CloudConnection(new Command(code, login, password));
+        mainConnection = new CloudConnection(new Command(code, login, password), onChannelInactive);
         if (executorService != null) {
             executorService.shutdownNow();
         }
@@ -48,43 +51,80 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void connect(String login, String password) {
-        connect(login, password, CommandCode.AUTH);
+    public void removeFile(List<Path> path) {
+        for (Path toDelete : path) {
+            sendCommand(new Command(CommandCode.REMOVE_FILE, toDelete.toString()));
+        }
+    }
+
+    @Override
+    public void login(String login, String password) {
+        if (!isConnected()) {
+            connect(login, password, CommandCode.AUTH);
+        } else {
+            Logger.warning("server already connected");
+        }
     }
 
     @Override
     public void requestRegistration(String login, String password) {
-        connect(login, password, CommandCode.REGISTER_REQUEST);
+        if (!isConnected()) {
+            connect(login, password, CommandCode.REGISTER_REQUEST);
+        } else {
+            Logger.warning("server already connected");
+        }
     }
 
     @Override
-    public void downloadFile(Path file, Path clientDownloadDirectory) {
-        mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString(), clientDownloadDirectory.toString()));
-    }
-
-    @Override
-    public void uploadFile(File file, Path serverUploadDirectory) {
-        if (!file.canRead()) {
+    public void downloadFile(Path clientDownloadDirectory, List<Path> files) {
+        if (!isConnected()) {
+            Logger.warning("Cant download, server not connected");
             return;
         }
-        List<File> files = PathUtils.getFilesListRecursively(file.toPath());
-        long size = PathUtils.getSize(files);
-
-        String[] args = new String[files.size() * 2 + 1];
-        args[0] = String.valueOf(size);
-        Path folderToTransfer = file.toPath();
-        int i = 1;
-        for (File f : files) {
-            args[i++] = Factory.getFileTransferAuthService().add(f.toPath(), mainConnection.getChannel());
-            Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
-            args[i++] = serverUploadDirectory.resolve(serverPath).toString();
+        for (Path file : files) {
+            mainConnection.sendCommand(new Command(CommandCode.FILES_REQUEST, file.toString(), clientDownloadDirectory.toString()));
         }
-        mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
     }
 
-    private void sendCommand(Command command) {
+    @Override
+    public void uploadFile(Path serverUploadDirectory, List<Path> files) {
+        if (!isConnected()) {
+            Logger.warning("Cant upload, server not connected");
+            return;
+        }
+        files.stream()
+                .map(Path::toFile)
+                .forEach(file -> {
+            if (!file.canRead()) {
+                return;
+            }
+            List<File> dirContent = PathUtils.getFilesListRecursively(file.toPath());
+            if (dirContent.isEmpty()) {
+                return;
+            }
+            long size = PathUtils.getSize(dirContent);
+
+            Factory.getUploadProgressService().add(file.toPath(), size);
+
+            String[] args = new String[dirContent.size() * 2 + 1];
+            args[0] = String.valueOf(size);
+            Path folderToTransfer = file.toPath();
+            int i = 1;
+            for (File f : dirContent) {
+                args[i++] = Factory.getFileTransferAuthService().add(file.toPath(), f.toPath(), mainConnection.getChannel());
+                Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
+                args[i++] = serverUploadDirectory.resolve(serverPath).toString();
+            }
+            mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
+        });
+    }
+
+    @Override
+    public void sendCommand(Command command) {
         if (isConnected()) {
             mainConnection.sendCommand(command);
+        } else {
+            Logger.warning("server not connected");
         }
     }
 
@@ -113,6 +153,11 @@ public class NettyNetworkServiceImpl implements NetworkService {
     @Override
     public void setCommandCodeListener(CommandCode code, Consumer<String[]> listener) {
         Factory.getCommandDictionaryService().getCommandService(code).setListener(listener);
+    }
+
+    @Override
+    public void setOnChannelInactive(Runnable onChannelInactive) {
+        this.onChannelInactive = onChannelInactive;
     }
 
     @Override

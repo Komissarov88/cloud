@@ -3,19 +3,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import my.cloud.client.gui.elements.impl.AnimatedProgressBar?>
 <AnchorPane id="rootPane" xmlns="http://javafx.com/javafx/8">
 
-    <HBox alignment="CENTER" AnchorPane.leftAnchor="0">
-        <Label id="name" text="Name" maxWidth="400"/>
+    <AnimatedProgressBar id="progress" mouseTransparent="true" opacity="0.0" progress="0.0"
+                          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
+    <HBox alignment="CENTER" AnchorPane.leftAnchor="0" HBox.hgrow="ALWAYS" maxWidth="350">
+        <Label id="name" text="Name"/>
     </HBox>
     <HBox AnchorPane.rightAnchor="0">
-        <children>
-            <ProgressBar id="progress" mouseTransparent="true" opacity="0.0" progress="0.0"
-                         style="-fx-padding: 0 0 0 5;"/>
-            <HBox alignment="CENTER_RIGHT" prefWidth="80">
-                <Label id="size" text="Size" textAlignment="RIGHT" />
-            </HBox>
-        </children>
+
+        <HBox alignment="CENTER_RIGHT" prefWidth="80">
+            <Label id="size" text="Size" textAlignment="RIGHT"/>
+        </HBox>
     </HBox>
 
 
