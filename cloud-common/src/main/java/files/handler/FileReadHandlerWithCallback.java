@@ -1,9 +1,12 @@
 package files.handler;
 
+import files.domain.FileTransferStatus;
 import files.domain.Transfer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.commons.io.FileUtils;
+import utils.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,8 +60,12 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        Logger.error(cause.getMessage());
         outputStream.close();
         ctx.close();
+        if (transferListener != null) {
+            transferListener.accept(transfer.origin, FileTransferStatus.INTERRUPTED.value);
+        }
+        FileUtils.deleteQuietly(transfer.destination.toFile());
     }
 }

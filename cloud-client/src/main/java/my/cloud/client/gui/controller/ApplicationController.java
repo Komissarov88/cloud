@@ -48,6 +48,11 @@ public class ApplicationController implements Initializable {
         networkService.setOnChannelInactive(() -> {
             if (!authViewToServerViewTransition.onA()) {
                 authViewToServerViewTransition.start();
+                progressAnimation.stop();
+                clientListView.clearAllProgressBars();
+                serverListView.clearAllProgressBars();
+                Factory.getUploadProgressService().clear();
+                Factory.getDownloadProgressService().clear();
             }
         });
 

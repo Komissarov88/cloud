@@ -1,5 +1,6 @@
 package files.service.impl;
 
+import files.domain.FileTransferStatus;
 import files.service.FileTransferProgressService;
 import utils.Logger;
 
@@ -37,6 +38,13 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
     @Override
     public void increment(Path path, int transferred) {
         Progress p = progressMap.get(path);
+
+        if (transferred < 0 && p != null && p.transferred.get() < p.size) {
+            Logger.info("file transfer fail");
+            p.transferred.set(FileTransferStatus.INTERRUPTED.value);
+            return;
+        }
+
         if (p != null) {
             p.transferred.addAndGet(transferred);
         } else {
@@ -49,11 +57,11 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
     public float progress(Path path) {
         Progress progress = progressMap.get(path);
         if (progress == null) {
-            return -1;
+            return FileTransferStatus.NOT_FOUND.value;
         }
         if (progress.transferred.get() >= progress.size) {
             progressMap.remove(path);
-            return 1;
+            return FileTransferStatus.DONE.value;
         }
         return (progress.transferred.floatValue()) / (float) (progress.size);
     }
@@ -66,7 +74,7 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
     @Override
     public float totalProgress() {
         if (progressMap.isEmpty()) {
-            return -1;
+            return FileTransferStatus.NOT_FOUND.value;
         }
 
         AtomicLong transferred = new AtomicLong(0);
@@ -90,5 +98,10 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
         } else {
             Logger.warning("no such transfer: " + path);
         }
+    }
+
+    @Override
+    public void clear() {
+        progressMap.clear();
     }
 }

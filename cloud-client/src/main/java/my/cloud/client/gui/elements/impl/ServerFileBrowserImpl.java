@@ -47,4 +47,10 @@ public class ServerFileBrowserImpl extends FileBrowserImpl {
             currentPath = root;
         }
     }
+
+    @Override
+    public void clearAllProgressBars() {
+        super.clearAllProgressBars();
+        listView.getItems().clear();
+    }
 }

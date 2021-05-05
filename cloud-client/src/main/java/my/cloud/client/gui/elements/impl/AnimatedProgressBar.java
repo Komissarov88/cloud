@@ -38,5 +38,6 @@ public class AnimatedProgressBar extends ProgressBar {
     public void reset() {
         opacityProperty().set(0);
         progressProperty().set(0);
+        animationTimer.stop();
     }
 }

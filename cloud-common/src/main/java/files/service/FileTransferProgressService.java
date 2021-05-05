@@ -11,4 +11,5 @@ public interface FileTransferProgressService {
     float progress(Path path);
     List<Path> getTransferList();
     void remove(Path path);
+    void clear();
 }

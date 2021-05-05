@@ -1,5 +1,6 @@
 package my.cloud.client.gui.elements.impl;
 
+import files.domain.FileTransferStatus;
 import files.service.FileTransferProgressService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -21,9 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FileBrowserImpl extends AnchorPane implements FileBrowser {
@@ -88,7 +88,11 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     }
 
     protected boolean deleteConfirm() {
-        alert.setText(getSelectedFilePaths());
+        List<Path> list = getSelectedFilePaths();
+        if (list.isEmpty()) {
+            return false;
+        }
+        alert.setText(list);
         Optional<ButtonType> result = alert.showAndWait();
         return result.orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
@@ -247,11 +251,16 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
         boolean anyTransferCompleted = false;
         for (Path job : jobs) {
             float progress = progressService.progress(job);
-            if (progress >= 1) {
+            if (progress >= FileTransferStatus.DONE.value) {
                 anyTransferCompleted = true;
             }
             for (FileItem item : listView.getItems()) {
                 if (item.getPath().equals(job)) {
+                    if (progress == FileTransferStatus.INTERRUPTED.value) {
+                        item.progressBar.reset();
+                        progressService.remove(item.getPath());
+                        break;
+                    }
                     item.setProgress(progress);
                     break;
                 }
@@ -268,5 +277,11 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
             return false;
         }
         return updateProgress();
+    }
+
+    @Override
+    public void clearAllProgressBars() {
+        listView.getItems().forEach(fileItem -> fileItem.progressBar.reset());
+        totalProgress.reset();
     }
 }

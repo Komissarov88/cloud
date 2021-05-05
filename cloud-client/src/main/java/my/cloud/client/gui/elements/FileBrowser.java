@@ -16,4 +16,5 @@ public interface FileBrowser {
     void setProgressService(FileTransferProgressService progressService);
     void startProgressAnimation(String... args);
     boolean handleAnimation(long now);
+    void clearAllProgressBars();
 }
