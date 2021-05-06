@@ -4,6 +4,7 @@ import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,8 +15,8 @@ public class ClassInstanceSetBuilder {
     private static <T> T newTargetClassInstance(Class<? extends T> type) {
         T instance = null;
         try {
-            instance = type.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            instance = type.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return instance;

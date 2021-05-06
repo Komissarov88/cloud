@@ -1,2 +1,5 @@
-rootProject.name ='cloud'
-include 'cloud-common', 'cloud-client', 'cloud-server'
+rootProject.name = 'cloud'
+include 'cloud-common'
+include 'cloud-server'
+include 'cloud-client'
+
