@@ -1,7 +1,3 @@
-plugins {
-    id 'java-library'
-}
-
 group 'my.cloud'
 version '1.0-SNAPSHOT'
 

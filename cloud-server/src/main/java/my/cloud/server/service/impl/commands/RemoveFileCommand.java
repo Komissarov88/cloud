@@ -1,46 +1,36 @@
 package my.cloud.server.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import command.service.CommandService;
-import io.netty.channel.ChannelHandlerContext;
-import my.cloud.server.factory.Factory;
+import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import org.apache.commons.io.FileUtils;
-import utils.PathUtils;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Called on delete request
  */
-public class RemoveFileCommand implements CommandService {
+public class RemoveFileCommand extends BaseServerCommand {
+
+    public RemoveFileCommand() {
+        expectedArgumentsCountCheck = i -> i == 1;
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
+    protected void processArguments(String[] args) {
 
-        if (command.getArgs() == null || command.getArgs().length != 1) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected file"));
-            ctx.close();
+        String request = args[0];
+        File requestFile = getFileFromClientRequest(request);
+
+        if (requestFile == null) {
+            sendFailMessage("access violation");
             return;
         }
 
-        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
-        File requestFile = Paths.get(rootUserPath.toString(), command.getArgs()[0]).toFile();
-
-        if (!PathUtils.isPathsParentAndChild(rootUserPath, requestFile.toPath())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
-            return;
-        }
-
-        System.out.println(requestFile);
         if (FileUtils.deleteQuietly(requestFile)) {
-            ctx.writeAndFlush(new Command(CommandCode.REFRESH_VIEW));
+            sendResponse(CommandCode.REFRESH_VIEW);
         } else {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant delete fail"));
+            sendFailMessage("cant delete fail");
         }
-
     }
 
     @Override

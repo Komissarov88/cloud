@@ -1,25 +1,26 @@
 package my.cloud.client.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import command.service.CommandService;
 import files.domain.TransferId;
-import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
+import my.cloud.client.service.impl.commands.base.BaseClientCommand;
 
 /**
  * Called when server cant accept upload
  */
-public class FilesOfferRefusedCommand implements CommandService {
+public class FilesOfferRefusedCommand extends BaseClientCommand {
+
+    public FilesOfferRefusedCommand() {
+        expectedArgumentsCountCheck = i -> i > 0;
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
-        if (command.getArgs().length > 0) {
-            TransferId t = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[0]);
-            Factory.getUploadProgressService().remove(t.origin);
-        }
-        for (int i = 1; i < command.getArgs().length; i++) {
-            TransferId t = Factory.getFileTransferAuthService().getTransferIfValid(command.getArgs()[i]);
+    protected void processArguments(String[] args) {
+        TransferId t = Factory.getFileTransferAuthService().getTransferIfValid(args[0]);
+        Factory.getUploadProgressService().remove(t.origin);
+
+        for (int i = 1; i < args.length; i++) {
+            Factory.getFileTransferAuthService().getTransferIfValid(args[i]);
         }
     }
 
@@ -27,5 +28,4 @@ public class FilesOfferRefusedCommand implements CommandService {
     public CommandCode getCommandCode() {
         return CommandCode.OFFER_REFUSED;
     }
-
 }

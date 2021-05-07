@@ -60,7 +60,7 @@ public class FileReadHandlerWithCallback extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Logger.error(cause.getMessage());
+        cause.printStackTrace();
         outputStream.close();
         ctx.close();
         if (transferListener != null) {

@@ -4,46 +4,47 @@ import command.domain.Command;
 import command.domain.CommandCode;
 import files.handler.FileReadHandlerWithCallback;
 import files.domain.TransferId;
-import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import command.service.CommandService;
+import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 
 /**
  * Called from upload channel with authenticate key
  */
-public class UploadCommand implements CommandService {
+public class UploadCommand extends BaseServerCommand {
+
+    public UploadCommand() {
+        expectedArgumentsCountCheck = i -> i == 2;
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
-
-        if (command.getArgs() == null
-                || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected keys pair"));
-            return;
-        }
-
-        String authKey = command.getArgs()[0];
-        String clientJobKey = command.getArgs()[1];
-
+    protected void processArguments(String[] args) {
+        String authKey = args[0];
+        String clientJobKey = args[1];
         TransferId transferId = Factory.getFileTransferAuthService().getTransferIfValid(authKey);
-        if (transferId != null) {
 
-            try {
-                ctx.pipeline().replace(
-                        "ObjectDecoder", "Reader", new FileReadHandlerWithCallback(transferId));
-                ctx.writeAndFlush(new Command(CommandCode.UPLOAD_READY, clientJobKey)).sync();
-                ctx.pipeline().removeLast();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        if (transferId == null) {
+            sendFailMessage("transfer channel authentication fails");
             return;
         }
-        ctx.writeAndFlush(new Command(CommandCode.FAIL, "transfer channel authentication fails"));
+
+        uploadReady(transferId, clientJobKey);
+    }
+
+    private void uploadReady(TransferId id, String clientJobKey) {
+        try {
+            ctx.pipeline().replace(
+                    "ObjectDecoder", "Reader", new FileReadHandlerWithCallback(id));
+            ctx.writeAndFlush(new Command(CommandCode.UPLOAD_READY, clientJobKey)).sync();
+            ctx.pipeline().removeLast();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public CommandCode getCommandCode() {
         return CommandCode.UPLOAD;
     }
+
 
 }

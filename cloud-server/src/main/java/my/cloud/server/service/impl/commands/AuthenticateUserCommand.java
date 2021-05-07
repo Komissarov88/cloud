@@ -1,10 +1,8 @@
 package my.cloud.server.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import command.service.CommandService;
+import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.PropertiesReader;
 
 import java.io.IOException;
@@ -14,32 +12,32 @@ import java.nio.file.Paths;
 /**
  * Called when client want to login
  */
-public class AuthenticateUserCommand implements CommandService {
+public class AuthenticateUserCommand extends BaseServerCommand {
+
+    public AuthenticateUserCommand() {
+        expectedArgumentsCountCheck = i -> i == 2;
+        disconnectOnFail = true;
+    }
+
+    private void createUserFolders(String login) {
+        try {
+            Files.createDirectories(Paths.get(PropertiesReader.getProperty("server.data.root.path"), login));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
-
-        if (command.getArgs() == null || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected login password pair"));
-            ctx.close();
-            return;
-        }
-
-        String login = command.getArgs()[0];
-        String password = command.getArgs()[1];
+    protected void processArguments(String[] args) {
+        String login = args[0];
+        String password = args[1];
 
         if (Factory.getDbService().login(login, password)) {
             Factory.getServerService().subscribeUser(login, ctx.channel());
-            ctx.writeAndFlush(new Command(CommandCode.SUCCESS, "authenticated"));
-
-            try {
-                Files.createDirectories(Paths.get(PropertiesReader.getProperty("server.data.root.path"), login));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            sendResponse(CommandCode.SUCCESS, "authenticated");
+            createUserFolders(login);
         } else {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "authentication fails"));
+            sendFailMessage("authentication fails");
             ctx.close();
         }
     }

@@ -10,6 +10,7 @@ import files.service.impl.FileTransferProgressServiceImpl;
 import my.cloud.client.service.NetworkService;
 import my.cloud.client.service.impl.NettyNetworkServiceImpl;
 import utils.ClassInstanceSetBuilder;
+import utils.PropertiesReader;
 
 public class Factory {
 
@@ -24,7 +25,7 @@ public class Factory {
     public static CommandDictionaryService getCommandDictionaryService() {
         if (commandDictionaryService == null) {
             commandDictionaryService = new CommandDictionaryServiceImpl(ClassInstanceSetBuilder.build(
-                            "my.cloud.client.service.impl.commands", CommandService.class));
+                    PropertiesReader.getProperty("command.package"), CommandService.class));
         }
         return commandDictionaryService;
     }

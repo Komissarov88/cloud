@@ -3,11 +3,10 @@ package my.cloud.server.service.impl.commands;
 import command.domain.Command;
 import command.domain.CommandCode;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import my.cloud.server.factory.Factory;
-import command.service.CommandService;
+import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.Logger;
 
 import java.io.File;
@@ -17,7 +16,31 @@ import java.nio.file.Path;
 /**
  * Called from download channel with authenticate key
  */
-public class DownloadCommand implements CommandService {
+public class DownloadCommand extends BaseServerCommand {
+
+    public DownloadCommand() {
+        expectedArgumentsCountCheck = i -> i == 2;
+        disconnectOnFail = true;
+    }
+
+    @Override
+    protected void processArguments(String[] args) {
+        String key = args[0];
+        String clientJobKey = args[1];
+
+        Path path = Factory.getFileTransferAuthService().getTransferIfValid(key).destination;
+        if (path != null) {
+            ChunkedFile chunkedFile;
+            if ((chunkedFile = getChunkedFile(path.toFile())) == null) {
+                sendFailMessage("cant read file");
+                ctx.close();
+            }
+            sendFile(chunkedFile, clientJobKey, path);
+        } else {
+            sendFailMessage("transfer channel authentication fails");
+            ctx.close();
+        }
+    }
 
     private ChunkedFile getChunkedFile(File file) {
         try {
@@ -28,48 +51,21 @@ public class DownloadCommand implements CommandService {
         return null;
     }
 
-    @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
+    private void sendFile(ChunkedFile cf, String clientJobKey, Path path) {
+        try {
+            Command readyCommand = new Command(
+                    CommandCode.DOWNLOAD_READY,
+                    clientJobKey);
 
-        if (command.getArgs() == null
-                || command.getArgs().length != 2) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "wrong arguments, expected transfer keys pair"));
-            ctx.close();
-            return;
-        }
-
-        String key = command.getArgs()[0];
-        String clientJobKey = command.getArgs()[1];
-
-        Path path = Factory.getFileTransferAuthService().getTransferIfValid(key).destination;
-        if (path != null) {
-            ChunkedFile cf;
-            if ((cf = getChunkedFile(path.toFile())) == null) {
-                ctx.writeAndFlush(new Command(CommandCode.FAIL, "cant read file"));
+            ctx.writeAndFlush(readyCommand).sync();
+            ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
+            ctx.pipeline().removeLast();
+            ctx.writeAndFlush(cf).addListener((ChannelFutureListener) future -> {
+                Logger.info("download complete");
                 ctx.close();
-                return;
-            }
-
-            try {
-
-                Command readyCommand = new Command(
-                        CommandCode.DOWNLOAD_READY,
-                        clientJobKey,
-                        String.valueOf(path.toFile().length()));
-
-                ctx.writeAndFlush(readyCommand).sync();
-                ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
-                ctx.pipeline().removeLast();
-                ctx.writeAndFlush(cf).addListener((ChannelFutureListener) future -> {
-                    Logger.info("download complete");
-                    ctx.close();
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        } else {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "transfer channel authentication fails"));
-            ctx.close();
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

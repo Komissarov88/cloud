@@ -92,9 +92,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
             Logger.warning("Cant upload, server not connected");
             return;
         }
-        files.stream()
-                .map(Path::toFile)
-                .forEach(file -> {
+        files.stream().map(Path::toFile).forEach(file -> {
             if (!file.canRead()) {
                 return;
             }

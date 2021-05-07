@@ -1,34 +1,20 @@
 package my.cloud.client.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import command.service.CommandService;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.function.Consumer;
+import my.cloud.client.service.impl.commands.base.BaseClientCommand;
 
 /**
  * Called when something goes wrong
+ * Does nothing, except calling consumer in super class.
  */
-public class FailResponseCommand implements CommandService {
+public class FailResponseCommand extends BaseClientCommand {
 
-    private Consumer<String[]> consumer;
-
-    @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
-        if (consumer != null) {
-            consumer.accept(command.getArgs());
-        }
+    public FailResponseCommand() {
+        expectedArgumentsCountCheck = integer -> true;
     }
 
     @Override
     public CommandCode getCommandCode() {
         return CommandCode.FAIL;
     }
-
-    @Override
-    public void setListener(Consumer<String[]> consumer) {
-        this.consumer = consumer;
-    }
-
 }

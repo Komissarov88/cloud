@@ -1,24 +1,16 @@
 package my.cloud.client.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import command.service.CommandService;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.function.Consumer;
+import my.cloud.client.service.impl.commands.base.BaseClientCommand;
 
 /**
- * Called on successful authentication
+ * Called on successful authentication.
+ * Does nothing, except calling consumer in super class.
  */
-public class AuthenticationSuccessCommand implements CommandService {
+public class AuthenticationSuccessCommand extends BaseClientCommand {
 
-    private Consumer<String[]> consumer;
-
-    @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
-        if (consumer != null) {
-            consumer.accept(command.getArgs());
-        }
+    public AuthenticationSuccessCommand() {
+        expectedArgumentsCountCheck = i -> true;
     }
 
     @Override
@@ -26,8 +18,4 @@ public class AuthenticationSuccessCommand implements CommandService {
         return CommandCode.SUCCESS;
     }
 
-    @Override
-    public void setListener(Consumer<String[]> consumer) {
-        this.consumer = consumer;
-    }
 }
