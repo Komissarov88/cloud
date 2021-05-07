@@ -1,8 +1,9 @@
 package my.cloud.server.service.impl.commands;
 
 import command.domain.CommandCode;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.PathUtils;
 
 import java.nio.file.Path;
@@ -11,30 +12,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
+
 /**
  * Called when client want to upload file
  */
-public class FilesOfferCommand extends BaseServerCommand {
+public class FilesOfferCommand implements CommandService {
 
-    public FilesOfferCommand() {
-        isAuthNeeded = true;
-        expectedArgumentsCountCheck = i -> i >= 3;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfUnknown(ctx) || wrongArgumentsLength(ctx, args, i -> i < 3);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
 
         long totalSize = Long.parseLong(args[0]);
 
         List<String> keys = parseEachSecond(args, 1);
 
-        if (!haveFreeSpace(totalSize)) {
-            sendFailMessage("not enough free space");
-            sendResponse(CommandCode.OFFER_REFUSED, keys.toArray(new String[0]));
+        if (!haveFreeSpace(ctx, totalSize)) {
+            sendFailMessage(ctx, "not enough free space");
+            sendResponse(ctx, CommandCode.OFFER_REFUSED, keys.toArray(new String[0]));
             return;
         }
 
-        String userRoot = getUserRootPath().toString();
+        String userRoot = getUserRootPath(ctx).toString();
         List<Path> files = parseEachSecond(args, 2)
                 .stream()
                 .map(s -> Paths.get(userRoot, s))
@@ -42,14 +48,14 @@ public class FilesOfferCommand extends BaseServerCommand {
 
         for (int i = 0; i < files.size(); i++) {
 
-            if (!PathUtils.isPathsParentAndChild(getUserRootPath(), files.get(i))) {
-                sendFailMessage("access violation");
-                sendResponse(CommandCode.OFFER_REFUSED, keys.get(i));
+            if (!PathUtils.isPathsParentAndChild(getUserRootPath(ctx), files.get(i))) {
+                sendFailMessage(ctx, "access violation");
+                sendResponse(ctx, CommandCode.OFFER_REFUSED, keys.get(i));
                 continue;
             }
 
             String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(null, files.get(i), ctx.channel());
-            sendResponse(CommandCode.UPLOAD_POSSIBLE, uploadChannelAuthKey, keys.get(i));
+            sendResponse(ctx, CommandCode.UPLOAD_POSSIBLE, uploadChannelAuthKey, keys.get(i));
         }
     }
 
@@ -62,7 +68,7 @@ public class FilesOfferCommand extends BaseServerCommand {
         return strings;
     }
 
-    private boolean haveFreeSpace(long size) {
+    private boolean haveFreeSpace(ChannelHandlerContext ctx, long size) {
         return size <= Factory.getServerService().getUserFreeSpace(ctx.channel());
     }
 
@@ -70,5 +76,4 @@ public class FilesOfferCommand extends BaseServerCommand {
     public CommandCode getCommandCode() {
         return CommandCode.FILES_OFFER;
     }
-
 }

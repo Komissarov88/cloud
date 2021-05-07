@@ -1,34 +1,41 @@
 package my.cloud.server.service.impl.commands;
 
 import command.domain.CommandCode;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import utils.PathUtils;
 
 import java.io.File;
 
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
+
 /**
  * Return files list in server directory
  */
-public class GetFormattedFileListCommand extends BaseServerCommand {
+public class GetFormattedFileListCommand implements CommandService {
 
-    public GetFormattedFileListCommand() {
-        isAuthNeeded = true;
-        expectedArgumentsCountCheck = i -> i == 1;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfUnknown(ctx) || wrongArgumentsLength(ctx, args, i -> i != 1);
     }
 
     @Override
-    protected void processArguments(String[] args) {
-        String request = args[0];
-        File requestFile = getFileFromClientRequest(request);
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
 
-        if (requestFile == null) {
-            sendFailMessage("access violation");
+        if (notCorrectCommand(ctx, args)) {
             return;
         }
 
-        String[] response = PathUtils.lsDirectory(requestFile.toPath(), getUserRootPath());
+        String request = args[0];
+        File requestFile = getFileFromClientRequest(ctx, request);
+
+        if (requestFile == null) {
+            sendFailMessage(ctx,"access violation");
+            return;
+        }
+
+        String[] response = PathUtils.lsDirectory(requestFile.toPath(), getUserRootPath(ctx));
         if (response.length > 0) {
-            sendResponse(CommandCode.LS, response);
+            sendResponse(ctx, CommandCode.LS, response);
         }
     }
 

@@ -1,6 +1,5 @@
 package command.service;
 
-import command.domain.Command;
 import command.domain.CommandCode;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -11,7 +10,7 @@ import java.util.function.Consumer;
  */
 public interface CommandService {
 
-    void processCommand(Command command, ChannelHandlerContext ctx);
+    void processCommand(ChannelHandlerContext ctx, String[] args);
     CommandCode getCommandCode();
     default void setListener(Consumer<String[]> consumer){};
 }

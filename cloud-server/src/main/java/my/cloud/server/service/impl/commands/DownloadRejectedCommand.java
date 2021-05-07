@@ -1,21 +1,28 @@
 package my.cloud.server.service.impl.commands;
 
 import command.domain.CommandCode;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
+
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.disconnectIfUnknown;
 
 /**
  * Called when client cant accept files
  */
-public class DownloadRejectedCommand extends BaseServerCommand {
+public class DownloadRejectedCommand implements CommandService {
 
-    public DownloadRejectedCommand() {
-        isAuthNeeded = true;
-        expectedArgumentsCountCheck = i -> i > 0;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfUnknown(ctx);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
+
         for (String arg : args) {
             Factory.getFileTransferAuthService().remove(arg);
         }

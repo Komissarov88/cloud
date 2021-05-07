@@ -2,35 +2,43 @@ package my.cloud.server.service.impl.commands;
 
 import command.domain.Command;
 import command.domain.CommandCode;
+import command.service.CommandService;
 import files.handler.FileReadHandlerWithCallback;
 import files.domain.TransferId;
+import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
+
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
 
 /**
  * Called from upload channel with authenticate key
  */
-public class UploadCommand extends BaseServerCommand {
+public class UploadCommand implements CommandService {
 
-    public UploadCommand() {
-        expectedArgumentsCountCheck = i -> i == 2;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return wrongArgumentsLength(ctx, args, i -> i != 2);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
+
         String authKey = args[0];
         String clientJobKey = args[1];
         TransferId transferId = Factory.getFileTransferAuthService().getTransferIfValid(authKey);
 
         if (transferId == null) {
-            sendFailMessage("transfer channel authentication fails");
+            sendFailMessage(ctx,"transfer channel authentication fails");
             return;
         }
 
-        uploadReady(transferId, clientJobKey);
+        uploadReady(ctx, transferId, clientJobKey);
     }
 
-    private void uploadReady(TransferId id, String clientJobKey) {
+    private void uploadReady(ChannelHandlerContext ctx, TransferId id, String clientJobKey) {
         try {
             ctx.pipeline().replace(
                     "ObjectDecoder", "Reader", new FileReadHandlerWithCallback(id));

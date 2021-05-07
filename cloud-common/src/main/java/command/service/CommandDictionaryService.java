@@ -9,6 +9,6 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public interface CommandDictionaryService {
 
-    void processCommand(Command command, ChannelHandlerContext ctx);
+    void processCommand(ChannelHandlerContext ctx, Command command);
     CommandService getCommandService(CommandCode code);
 }

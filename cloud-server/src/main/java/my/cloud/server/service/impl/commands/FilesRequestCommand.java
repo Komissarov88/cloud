@@ -1,8 +1,9 @@
 package my.cloud.server.service.impl.commands;
 
 import command.domain.CommandCode;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.PathUtils;
 
 import java.io.File;
@@ -10,36 +11,42 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
+
 /**
  * Called when client want to download file
  */
-public class FilesRequestCommand extends BaseServerCommand {
+public class FilesRequestCommand implements CommandService {
 
-    public FilesRequestCommand() {
-        isAuthNeeded = true;
-        expectedArgumentsCountCheck = i -> i == 2;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfUnknown(ctx) || wrongArgumentsLength(ctx, args, i -> i != 2);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
+
         String request = args[0];
-        File requestFile = getFileFromClientRequest(request);
+        File requestFile = getFileFromClientRequest(ctx, request);
 
         if (requestFile == null) {
-            sendFailMessage("access violation");
+            sendFailMessage(ctx,"access violation");
             return;
         }
 
         String clientDownloadFolder = args[1];
 
         if (requestFile.canRead()) {
-            sendConfirm(requestFile, clientDownloadFolder);
+            sendConfirm(ctx, requestFile, clientDownloadFolder);
         } else {
-            sendFailMessage("cant read file " + requestFile.getName());
+            sendFailMessage(ctx,"cant read file " + requestFile.getName());
         }
     }
 
-    private void sendConfirm(File requestFile, String clientDownloadFolder) {
+    private void sendConfirm(ChannelHandlerContext ctx, File requestFile, String clientDownloadFolder) {
 
         List<File> files = PathUtils.getFilesListRecursively(requestFile.toPath());
         long size = PathUtils.getSize(files);
@@ -50,7 +57,7 @@ public class FilesRequestCommand extends BaseServerCommand {
         response.add(String.valueOf(files.size())); // number of files
         response.add(clientDownloadFolder);
 
-        Path rootUserPath = getUserRootPath();
+        Path rootUserPath = getUserRootPath(ctx);
         response.add(rootUserPath.relativize(requestFile.toPath()).toString()); // origin folder
 
         for (File f : files) {
@@ -58,7 +65,7 @@ public class FilesRequestCommand extends BaseServerCommand {
             response.add(requestFile.getParentFile().toPath().relativize(f.toPath()).toString());
         }
 
-        sendResponse(CommandCode.DOWNLOAD_POSSIBLE, response.toArray(new String[0]));
+        sendResponse(ctx, CommandCode.DOWNLOAD_POSSIBLE, response.toArray(new String[0]));
     }
 
     @Override

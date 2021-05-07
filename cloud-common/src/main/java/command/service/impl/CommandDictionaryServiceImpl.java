@@ -27,13 +27,13 @@ public class CommandDictionaryServiceImpl implements CommandDictionaryService {
     }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
+    public void processCommand(ChannelHandlerContext ctx, Command command) {
         CommandService c = commandDictionary.get(command.getCode());
         if (c == null) {
             Logger.warning("command not found");
             return;
         }
-       c.processCommand(command, ctx);
+       c.processCommand(ctx, command.getArgs());
     }
 
     @Override
