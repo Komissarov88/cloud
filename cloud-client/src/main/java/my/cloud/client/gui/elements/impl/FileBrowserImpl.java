@@ -37,9 +37,10 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected Path root;
     protected Label pathLabel;
     protected FileItemListView listView;
+    protected Button homeBtn;
     private Pane pane;
-    private final AnimatedProgressBar totalProgress;
-    private final FileItemPool fileItemPool;
+    private AnimatedProgressBar totalProgress;
+    private FileItemPool fileItemPool;
     protected FileTransferProgressService progressService;
     protected DeleteAlert alert;
     protected Button rootBtn;
@@ -47,36 +48,15 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
     protected MenuItem delete;
     protected MenuItem open;
 
-    private void loadFXML() {
-        try {
-            pane = FXMLLoader.load(
-                    Objects.requireNonNull(
-                            FileItem.class.getResource("/view/fileBrowserView.fxml")));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public FileBrowserImpl() {
-        loadFXML();
-        getChildren().add(pane);
-
-        // fxml lookup
-        pathLabel = (Label) pane.lookup("#currentPath");
-        listView = (FileItemListView) pane.lookup("#listView");
-        Button homeBtn = (Button) pane.lookup("#home");
-        rootBtn = (Button) pane.lookup("#root");
-        totalProgress = (AnimatedProgressBar) pane.lookup("#totalProgress");
-
-        root = Paths.get(".").toAbsolutePath();
-        fileItemPool = new FileItemPool();
-
-        pathLabel.setText(root.toString());
-        currentPath = root;
-
+        fxmlLookup();
         setupListView();
         createContextMenu();
+        navigationButtonsSetup();
+        alert = new DeleteAlert();
+    }
 
+    private void navigationButtonsSetup() {
         // change directory to home action
         homeBtn.setOnAction(event -> {
             changeDirectory(root);
@@ -92,8 +72,27 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
                 changeDirectory(res.toPath());
             }
         });
+    }
 
-        alert = new DeleteAlert();
+    private void fxmlLookup() {
+        loadFXML();
+        getChildren().add(pane);
+
+        pathLabel = (Label) pane.lookup("#currentPath");
+        listView = (FileItemListView) pane.lookup("#listView");
+        homeBtn = (Button) pane.lookup("#home");
+        rootBtn = (Button) pane.lookup("#root");
+        totalProgress = (AnimatedProgressBar) pane.lookup("#totalProgress");
+    }
+
+    private void loadFXML() {
+        try {
+            pane = FXMLLoader.load(
+                    Objects.requireNonNull(
+                            FileItem.class.getResource("/view/fileBrowserView.fxml")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -126,6 +125,12 @@ public class FileBrowserImpl extends AnchorPane implements FileBrowser {
      * Setup GUI and callbacks for file browser
      */
     private void setupListView() {
+        root = Paths.get(".").toAbsolutePath();
+        fileItemPool = new FileItemPool();
+
+        pathLabel.setText(root.toString());
+        currentPath = root;
+
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         listView.setOnMouseClicked(event -> {
