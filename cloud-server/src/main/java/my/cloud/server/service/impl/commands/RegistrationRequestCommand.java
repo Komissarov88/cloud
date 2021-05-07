@@ -1,32 +1,38 @@
 package my.cloud.server.service.impl.commands;
 
 import command.domain.CommandCode;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.PropertiesReader;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
+
 /**
  * Called when client want to register
  */
-public class RegistrationRequestCommand extends BaseServerCommand {
+public class RegistrationRequestCommand implements CommandService {
 
-    public RegistrationRequestCommand() {
-        disconnectOnFail = true;
-        expectedArgumentsCountCheck = i -> i == 2;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfArgsLengthNotEqual(ctx, 2, args);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
 
         String login = args[0];
         String password = args[1];
 
         if (login.length() == 0 || password.length() == 0) {
-            sendFailMessage("login/password expected not empty");
+            sendFailMessage(ctx,"login/password expected not empty");
             ctx.close();
             return;
         }
@@ -34,9 +40,9 @@ public class RegistrationRequestCommand extends BaseServerCommand {
         if (Factory.getDbService().addUser(login, password)) {
             Factory.getServerService().subscribeUser(login, ctx.channel());
             createUserFolder(login);
-            sendResponse(CommandCode.SUCCESS, "registered");
+            sendResponse(ctx, CommandCode.SUCCESS, "registered");
         } else {
-            sendFailMessage("user already exists");
+            sendFailMessage(ctx,"user already exists");
             ctx.close();
         }
     }

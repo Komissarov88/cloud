@@ -1,35 +1,42 @@
 package my.cloud.server.service.impl.commands;
 
 import command.domain.CommandCode;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
+
 /**
  * Called on delete request
  */
-public class RemoveFileCommand extends BaseServerCommand {
+public class RemoveFileCommand implements CommandService {
 
-    public RemoveFileCommand() {
-        expectedArgumentsCountCheck = i -> i == 1;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfUnknown(ctx) || wrongArgumentsLength(ctx, args, i -> i != 1);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
 
         String request = args[0];
-        File requestFile = getFileFromClientRequest(request);
+        File requestFile = getFileFromClientRequest(ctx, request);
 
         if (requestFile == null) {
-            sendFailMessage("access violation");
+            sendFailMessage(ctx, "access violation");
             return;
         }
 
         if (FileUtils.deleteQuietly(requestFile)) {
-            sendResponse(CommandCode.REFRESH_VIEW);
+            sendResponse(ctx, CommandCode.REFRESH_VIEW);
         } else {
-            sendFailMessage("cant delete fail");
+            sendFailMessage(ctx, "cant delete fail");
         }
     }
 

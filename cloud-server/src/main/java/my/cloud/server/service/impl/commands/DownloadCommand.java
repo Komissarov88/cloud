@@ -2,29 +2,36 @@ package my.cloud.server.service.impl.commands;
 
 import command.domain.Command;
 import command.domain.CommandCode;
+import command.service.CommandService;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import my.cloud.server.factory.Factory;
-import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static my.cloud.server.service.impl.commands.util.ServerCommandUtil.*;
+
 /**
  * Called from download channel with authenticate key
  */
-public class DownloadCommand extends BaseServerCommand {
+public class DownloadCommand implements CommandService {
 
-    public DownloadCommand() {
-        expectedArgumentsCountCheck = i -> i == 2;
-        disconnectOnFail = true;
+    private boolean notCorrectCommand(ChannelHandlerContext ctx, String[] args) {
+        return disconnectIfArgsLengthNotEqual(ctx, 2, args);
     }
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+
+        if (notCorrectCommand(ctx, args)) {
+            return;
+        }
+
         String key = args[0];
         String clientJobKey = args[1];
 
@@ -32,12 +39,12 @@ public class DownloadCommand extends BaseServerCommand {
         if (path != null) {
             ChunkedFile chunkedFile;
             if ((chunkedFile = getChunkedFile(path.toFile())) == null) {
-                sendFailMessage("cant read file");
+                sendFailMessage(ctx,"cant read file");
                 ctx.close();
             }
-            sendFile(chunkedFile, clientJobKey, path);
+            sendFile(ctx, chunkedFile, clientJobKey, path);
         } else {
-            sendFailMessage("transfer channel authentication fails");
+            sendFailMessage(ctx,"transfer channel authentication fails");
             ctx.close();
         }
     }
@@ -51,7 +58,7 @@ public class DownloadCommand extends BaseServerCommand {
         return null;
     }
 
-    private void sendFile(ChunkedFile cf, String clientJobKey, Path path) {
+    private void sendFile(ChannelHandlerContext ctx, ChunkedFile cf, String clientJobKey, Path path) {
         try {
             Command readyCommand = new Command(
                     CommandCode.DOWNLOAD_READY,

@@ -2,28 +2,33 @@ package my.cloud.client.service.impl.commands;
 
 import command.domain.Command;
 import command.domain.CommandCode;
+import command.service.CommandService;
+import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.service.impl.CloudConnection;
-import my.cloud.client.service.impl.commands.base.BaseClientCommand;
 import utils.Logger;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static my.cloud.client.service.impl.commands.util.ClientCommandUtil.*;
 
 /**
  * Called when server sends key to authenticate download channel
  */
-public class DownloadPossibleCommand extends BaseClientCommand {
+public class DownloadPossibleCommand implements CommandService {
 
-    public DownloadPossibleCommand() {
-        expectedArgumentsCountCheck = i -> i >= 6 && i % 2 == 0;
-    }
+    private Consumer<String[]> consumer;
 
     @Override
-    protected void processArguments(String[] args) {
+    public void processCommand(ChannelHandlerContext ctx, String[] args) {
+        if (wrongArgumentsLength(args, i -> i < 6 || i % 2 != 0)) {
+            return;
+        }
 
         final int COMMON_ARGS_COUNT = 4;
 
@@ -50,10 +55,17 @@ public class DownloadPossibleCommand extends BaseClientCommand {
         }
 
         Factory.getDownloadProgressService().add(origin, totalSize);
-        initiateDownload(paths, keys, targetPath, origin);
+        initiateDownload(ctx, paths, keys, targetPath, origin);
+
+        if (consumer != null) {
+            consumer.accept(args);
+        }
     }
 
-    private void initiateDownload(List<Path> serverPath, List<String> keys, Path targetPath, Path origin) {
+    private void initiateDownload(ChannelHandlerContext ctx,
+                                  List<Path> serverPath, List<String> keys,
+                                  Path targetPath, Path origin) {
+
         for (int i = 0; i < serverPath.size(); i++) {
             Path fileName = targetPath.resolve(serverPath.get(i));
 
@@ -74,6 +86,11 @@ public class DownloadPossibleCommand extends BaseClientCommand {
             strings.add(args[i]);
         }
         return strings;
+    }
+
+    @Override
+    public void setListener(Consumer<String[]> consumer) {
+        this.consumer = consumer;
     }
 
     @Override
