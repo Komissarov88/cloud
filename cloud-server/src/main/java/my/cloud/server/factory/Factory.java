@@ -9,6 +9,7 @@ import my.cloud.server.service.impl.database.PostgresDBServiceImpl;
 import command.service.impl.CommandDictionaryServiceImpl;
 import my.cloud.server.service.impl.NettyServerServiceImpl;
 import utils.ClassInstanceSetBuilder;
+import utils.PropertiesReader;
 
 public class Factory {
 
@@ -25,7 +26,7 @@ public class Factory {
     public static CommandDictionaryService getCommandDictionaryService() {
         if (commandDictionaryService == null) {
             return new CommandDictionaryServiceImpl(ClassInstanceSetBuilder.build(
-                    "my.cloud.server.service.impl.commands", CommandService.class));
+                    PropertiesReader.getProperty("command.package"), CommandService.class));
         }
         return commandDictionaryService;
     }

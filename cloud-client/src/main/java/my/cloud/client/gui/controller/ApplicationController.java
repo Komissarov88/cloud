@@ -133,7 +133,7 @@ public class ApplicationController implements Initializable {
         fileRewriteAlert.reset(serverListView.getSelectedFilePaths(), true);
         List<Path> downloadFiles = fileRewriteAlert.getTransferList(clientListView.getCurrentFilePaths());
         if (downloadFiles.size() > 0) {
-            networkService.downloadFile(clientListView.getCurrentDirectory(), downloadFiles);
+            networkService.downloadFiles(clientListView.getCurrentDirectory(), downloadFiles);
         }
     }
 
@@ -145,7 +145,7 @@ public class ApplicationController implements Initializable {
         fileRewriteAlert.reset(clientListView.getSelectedFilePaths(), false);
         List<Path> uploadFiles = fileRewriteAlert.getTransferList(serverListView.getCurrentFilePaths());
         if (uploadFiles.size() > 0) {
-            networkService.uploadFile(serverListView.getCurrentDirectory(), uploadFiles);
+            networkService.uploadFiles(serverListView.getCurrentDirectory(), uploadFiles);
         }
     }
 

@@ -1,41 +1,34 @@
 package my.cloud.server.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import io.netty.channel.ChannelHandlerContext;
-import my.cloud.server.factory.Factory;
-import command.service.CommandService;
+import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.PathUtils;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 
 /**
  * Return files list in server directory
  */
-public class GetFormattedFileListCommand implements CommandService {
+public class GetFormattedFileListCommand extends BaseServerCommand {
+
+    public GetFormattedFileListCommand() {
+        isAuthNeeded = true;
+        expectedArgumentsCountCheck = i -> i == 1;
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
+    protected void processArguments(String[] args) {
+        String request = args[0];
+        File requestFile = getFileFromClientRequest(request);
 
-        if (command.getArgs().length != 1
-                || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL,
-                    "wrong arguments, expected one directory"));
+        if (requestFile == null) {
+            sendFailMessage("access violation");
             return;
         }
 
-        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
-        Path requestPath = Paths.get(rootUserPath.toString(), command.getArgs()[0]);
-
-        if (!PathUtils.isPathsParentAndChild(rootUserPath, requestPath)) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
-            return;
-        }
-
-        String[] args = PathUtils.lsDirectory(requestPath, rootUserPath);
-        if (args.length > 0) {
-            ctx.writeAndFlush(new Command(CommandCode.LS, args));
+        String[] response = PathUtils.lsDirectory(requestFile.toPath(), getUserRootPath());
+        if (response.length > 0) {
+            sendResponse(CommandCode.LS, response);
         }
     }
 

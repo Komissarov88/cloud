@@ -1,24 +1,16 @@
 package my.cloud.client.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import command.service.CommandService;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.function.Consumer;
+import my.cloud.client.service.impl.commands.base.BaseClientCommand;
 
 /**
- * Called on transfer completes or file delete
+ * Called on transfer completes or file delete.
+ * Does nothing, except calling consumer in super class.
  */
-public class RefreshViewCommand implements CommandService {
+public class RefreshViewCommand extends BaseClientCommand {
 
-    private Consumer<String[]> consumer;
-
-    @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
-        if (consumer != null) {
-            consumer.accept(command.getArgs());
-        }
+    public RefreshViewCommand() {
+        expectedArgumentsCountCheck = integer -> true;
     }
 
     @Override
@@ -26,8 +18,4 @@ public class RefreshViewCommand implements CommandService {
         return CommandCode.REFRESH_VIEW;
     }
 
-    @Override
-    public void setListener(Consumer<String[]> consumer) {
-        this.consumer = consumer;
-    }
 }

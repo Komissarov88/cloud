@@ -11,6 +11,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import my.cloud.server.factory.Factory;
 import my.cloud.server.service.DBService;
 import my.cloud.server.service.ServerService;
+import utils.Logger;
 import utils.PathUtils;
 import utils.PropertiesReader;
 
@@ -88,6 +89,7 @@ public class NettyServerServiceImpl implements ServerService {
                         }
                     });
             future = b.bind(PORT).sync();
+            Logger.info("Server started.");
             future.channel().closeFuture().sync();
         } catch (Exception e) {
             e.printStackTrace();

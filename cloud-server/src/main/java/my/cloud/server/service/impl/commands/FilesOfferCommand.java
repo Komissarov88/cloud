@@ -1,63 +1,69 @@
 package my.cloud.server.service.impl.commands;
 
-import command.domain.Command;
 import command.domain.CommandCode;
-import io.netty.channel.ChannelHandlerContext;
 import my.cloud.server.factory.Factory;
-import command.service.CommandService;
+import my.cloud.server.service.impl.commands.base.BaseServerCommand;
 import utils.PathUtils;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Called when client want to upload file
  */
-public class FilesOfferCommand implements CommandService {
+public class FilesOfferCommand extends BaseServerCommand {
+
+    public FilesOfferCommand() {
+        isAuthNeeded = true;
+        expectedArgumentsCountCheck = i -> i >= 3;
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
+    protected void processArguments(String[] args) {
 
-        if (command.getArgs() == null
-                || command.getArgs().length < 3
-                || !Factory.getServerService().isUserLoggedIn(ctx.channel())) {
-            ctx.writeAndFlush(new Command(CommandCode.FAIL,
-                    "wrong arguments, expected total size and key fail pairs"));
+        long totalSize = Long.parseLong(args[0]);
+
+        List<String> keys = parseEachSecond(args, 1);
+
+        if (!haveFreeSpace(totalSize)) {
+            sendFailMessage("not enough free space");
+            sendResponse(CommandCode.OFFER_REFUSED, keys.toArray(new String[0]));
             return;
         }
 
-        Path rootUserPath = Factory.getServerService().getUserRootPath(ctx.channel());
+        String userRoot = getUserRootPath().toString();
+        List<Path> files = parseEachSecond(args, 2)
+                .stream()
+                .map(s -> Paths.get(userRoot, s))
+                .collect(Collectors.toList());
 
-        long size = Long.parseLong(command.getArgs()[0]);
-        if (size > Factory.getServerService().getUserFreeSpace(ctx.channel())) {
-            String[] args = new String[(command.getArgs().length - 1) / 2];
-            for (int i = 0; i < args.length; i++) {
-                String clientKey = command.getArgs()[i * 2 + 1];
-                args[i] = clientKey;
-            }
-            ctx.writeAndFlush(new Command(CommandCode.FAIL, "not enough free space"));
-            ctx.writeAndFlush(new Command(CommandCode.OFFER_REFUSED, args));
-            return;
-        }
+        for (int i = 0; i < files.size(); i++) {
 
-        for (int i = 1; i <= command.getArgs().length - 2; i+=2) {
-            File file = Paths.get(rootUserPath.toString(), command.getArgs()[i+1]).toFile();
-            String clientKey = command.getArgs()[i];
-
-            if (!PathUtils.isPathsParentAndChild(rootUserPath, file.toPath())) {
-                ctx.writeAndFlush(new Command(CommandCode.FAIL, "access violation"));
-                ctx.writeAndFlush(new Command(CommandCode.OFFER_REFUSED, clientKey));
+            if (!PathUtils.isPathsParentAndChild(getUserRootPath(), files.get(i))) {
+                sendFailMessage("access violation");
+                sendResponse(CommandCode.OFFER_REFUSED, keys.get(i));
                 continue;
             }
 
-            String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(null, file.toPath(), ctx.channel());
-
-            ctx.writeAndFlush(
-                    new Command(CommandCode.UPLOAD_POSSIBLE,
-                    uploadChannelAuthKey,
-                    clientKey));
+            String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(null, files.get(i), ctx.channel());
+            sendResponse(CommandCode.UPLOAD_POSSIBLE, uploadChannelAuthKey, keys.get(i));
         }
+    }
+
+    private List<String> parseEachSecond(String[] args, int from) {
+
+        List<String> strings = new ArrayList<>();
+        for (int i = from; i < args.length; i += 2) {
+            strings.add(args[i]);
+        }
+        return strings;
+    }
+
+    private boolean haveFreeSpace(long size) {
+        return size <= Factory.getServerService().getUserFreeSpace(ctx.channel());
     }
 
     @Override

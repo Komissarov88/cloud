@@ -14,7 +14,7 @@ public interface NetworkService {
      * @param serverUploadDirectory absolute path from server side user root to target dir
      * @param files list of absolute paths of local file system
      */
-    void uploadFile(Path serverUploadDirectory, List<Path> files);
+    void uploadFiles(Path serverUploadDirectory, List<Path> files);
 
     /**
      * Remove remote files
@@ -27,7 +27,7 @@ public interface NetworkService {
      * @param clientDownloadDirectory absolute path to client target dir
      * @param files absolute path from server side user root to target file
      */
-    void downloadFile(Path clientDownloadDirectory, List<Path> files);
+    void downloadFiles(Path clientDownloadDirectory, List<Path> files);
 
     /**
      * Close main connection

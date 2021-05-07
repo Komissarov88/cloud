@@ -10,6 +10,7 @@ import utils.PropertiesReader;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,7 +77,7 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void downloadFile(Path clientDownloadDirectory, List<Path> files) {
+    public void downloadFiles(Path clientDownloadDirectory, List<Path> files) {
         if (!isConnected()) {
             Logger.warning("Cant download, server not connected");
             return;
@@ -87,14 +88,12 @@ public class NettyNetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void uploadFile(Path serverUploadDirectory, List<Path> files) {
+    public void uploadFiles(Path serverUploadDirectory, List<Path> files) {
         if (!isConnected()) {
             Logger.warning("Cant upload, server not connected");
             return;
         }
-        files.stream()
-                .map(Path::toFile)
-                .forEach(file -> {
+        files.stream().map(Path::toFile).forEach(file -> {
             if (!file.canRead()) {
                 return;
             }
@@ -106,17 +105,20 @@ public class NettyNetworkServiceImpl implements NetworkService {
 
             Factory.getUploadProgressService().add(file.toPath(), size);
 
-            String[] args = new String[dirContent.size() * 2 + 1];
-            args[0] = String.valueOf(size);
-            Path folderToTransfer = file.toPath();
-            int i = 1;
-            for (File f : dirContent) {
-                args[i++] = Factory.getFileTransferAuthService().add(file.toPath(), f.toPath(), mainConnection.getChannel());
-                Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
-                args[i++] = serverUploadDirectory.resolve(serverPath).toString();
-            }
-            mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args));
+            sendUploadOffer(serverUploadDirectory, file, dirContent, size);
         });
+    }
+
+    private void sendUploadOffer(Path serverUploadDirectory, File file, List<File> dirContent, long size) {
+        List<String> args = new LinkedList<>();
+        args.add(String.valueOf(size));
+        Path folderToTransfer = file.toPath();
+        for (File f : dirContent) {
+            args.add(Factory.getFileTransferAuthService().add(file.toPath(), f.toPath(), mainConnection.getChannel()));
+            Path serverPath = folderToTransfer.getParent().relativize(f.toPath());
+            args.add(serverUploadDirectory.resolve(serverPath).toString());
+        }
+        mainConnection.sendCommand(new Command(CommandCode.FILES_OFFER, args.toArray(new String[0])));
     }
 
     @Override

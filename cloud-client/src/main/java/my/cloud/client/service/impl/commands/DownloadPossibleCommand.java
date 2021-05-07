@@ -2,79 +2,82 @@ package my.cloud.client.service.impl.commands;
 
 import command.domain.Command;
 import command.domain.CommandCode;
-import command.service.CommandService;
-import io.netty.channel.ChannelHandlerContext;
 import my.cloud.client.factory.Factory;
 import my.cloud.client.service.impl.CloudConnection;
+import my.cloud.client.service.impl.commands.base.BaseClientCommand;
 import utils.Logger;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Called when server sends key to authenticate download channel
  */
-public class DownloadPossibleCommand implements CommandService {
+public class DownloadPossibleCommand extends BaseClientCommand {
 
-    private Consumer<String[]> consumer;
+    public DownloadPossibleCommand() {
+        expectedArgumentsCountCheck = i -> i >= 6 && i % 2 == 0;
+    }
 
     @Override
-    public void processCommand(Command command, ChannelHandlerContext ctx) {
+    protected void processArguments(String[] args) {
 
-        if (command.getArgs() == null
-                || command.getArgs().length < 6) {
-            Logger.warning("wrong arguments");
-            return;
-        }
+        final int COMMON_ARGS_COUNT = 4;
 
-        long totalSize = Long.parseLong(command.getArgs()[0]);
-        int filesNumber = Integer.parseInt(command.getArgs()[1]);
-        Path targetPath = Paths.get(command.getArgs()[2]);
-        Path origin = Paths.get(command.getArgs()[3]);
+        long totalSize = Long.parseLong(args[0]);
+        int filesNumber = Integer.parseInt(args[1]);
+        Path targetPath = Paths.get(args[2]);
+        Path origin = Paths.get(args[3]);
 
-        // free space check
+        List<String> keys = parseEachSecond(args, COMMON_ARGS_COUNT);
+
         if (totalSize > targetPath.toFile().getFreeSpace()) {
-            Logger.warning("not enough free space");
-            String[] args = new String[filesNumber];
-            int j = 4;
-            for (int i = 0; i < filesNumber; i++) {
-                String authKey = command.getArgs()[j];
-                args[i] = authKey;
-                j += 2;
-            }
-            Factory.getNetworkService().sendCommand(new Command(CommandCode.OFFER_REFUSED, args));
+            sendRefuseResponse(keys);
             return;
         }
 
-        // add info to track transfer progress
-        Factory.getDownloadProgressService().add(origin, totalSize);
+        List<Path> paths = parseEachSecond(args, COMMON_ARGS_COUNT + 1)
+                .stream()
+                .map(Paths::get).collect(Collectors.toList());
 
-        // submit transfer channels
-        int j = 4;
-        for (int i = 0; i < filesNumber; i++) {
-            String authKey = command.getArgs()[j++];
-            Path serverPath = Paths.get(command.getArgs()[j++]);
-            Path fileName = targetPath.resolve(serverPath);
+        if (filesNumber != paths.size()) {
+            sendFailMessage("files count mismatch");
+            sendRefuseResponse(keys);
+            return;
+        }
+
+        Factory.getDownloadProgressService().add(origin, totalSize);
+        initiateDownload(paths, keys, targetPath, origin);
+    }
+
+    private void initiateDownload(List<Path> serverPath, List<String> keys, Path targetPath, Path origin) {
+        for (int i = 0; i < serverPath.size(); i++) {
+            Path fileName = targetPath.resolve(serverPath.get(i));
 
             String jobKey = Factory.getFileTransferAuthService().add(origin, fileName, ctx.channel());
-            Command initialCommand = new Command(CommandCode.DOWNLOAD, authKey, jobKey);
+            Command initialCommand = new Command(CommandCode.DOWNLOAD, keys.get(i), jobKey);
             Factory.getNetworkService().submitConnection(new CloudConnection(initialCommand, null));
         }
+    }
 
-        // callback to notify when download task added
-        if (consumer != null) {
-            consumer.accept(command.getArgs());
+    private void sendRefuseResponse(List<String> keys) {
+        Logger.warning("not enough free space");
+        Factory.getNetworkService().sendCommand(new Command(CommandCode.OFFER_REFUSED, keys.toArray(new String[0])));
+    }
+
+    private List<String> parseEachSecond(String[] args, int from) {
+        List<String> strings = new ArrayList<>();
+        for (int i = from; i < args.length; i += 2) {
+            strings.add(args[i]);
         }
+        return strings;
     }
 
     @Override
     public CommandCode getCommandCode() {
         return CommandCode.DOWNLOAD_POSSIBLE;
-    }
-
-    @Override
-    public void setListener(Consumer<String[]> consumer) {
-        this.consumer = consumer;
     }
 }
