@@ -5,8 +5,8 @@ import utils.HashOperator;
 import utils.Logger;
 import utils.PropertiesReader;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +15,7 @@ import java.sql.SQLException;
 public class PostgresDBServiceImpl implements DBService {
 
     private static PostgresDBServiceImpl dbService;
-    private DBConnector connector;
+    private final DBConnector connector;
     private PreparedStatement addUserStatement;
     private PreparedStatement authStatement;
     private PreparedStatement spaceLimitStatement;
@@ -29,10 +29,9 @@ public class PostgresDBServiceImpl implements DBService {
 
     private String getStatementSql(String res) {
         String statementLocation = PropertiesReader.getProperty("db.statement.path") + res;
-        String content = null;
         try {
-            BufferedInputStream stream =
-                    (BufferedInputStream) getClass().getResource(statementLocation).getContent();
+            InputStream stream =
+                    (InputStream) getClass().getResource(statementLocation).getContent();
             StringBuilder sb = new StringBuilder();
             int x;
             while ((x = stream.read()) > -1) {
