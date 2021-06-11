@@ -3,9 +3,11 @@ version: '3.2'
 volumes:
   cloud-postgres:
     driver: local
+  cloud-files:
+    driver: local
 
 networks:
-  postgres:
+  postgres-network:
     driver: bridge
 
 services:
@@ -17,12 +19,21 @@ services:
         source: cloud-postgres
         target: /var/lib/postgresql/dataConfig
     networks:
-      - postgres
+      - postgres-network
     environment:
       POSTGRES_DB: cloud
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespass
     ports:
       - "5435:5432"
-
-#  jdbc:postgresql://localhost:5435/cloud
+  cloud-server:
+    build: .
+    container_name: cloud-server
+    volumes:
+      - type: volume
+        source: cloud-files
+        target: /app
+    networks:
+      - postgres-network
+    ports:
+      - "8189:8189"
