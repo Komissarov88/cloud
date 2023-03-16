@@ -47,6 +47,7 @@ project(":cloud-client") {
         manifest {
             attributes 'Main-Class': project.mainClassName
         }
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         dependsOn configurations.runtimeClasspath
         from {
             configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
@@ -74,6 +75,7 @@ project(":cloud-server") {
         manifest {
             attributes 'Main-Class': project.mainClassName
         }
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         dependsOn configurations.runtimeClasspath
         from {
             configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
