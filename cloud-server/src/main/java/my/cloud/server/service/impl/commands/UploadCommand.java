@@ -21,7 +21,6 @@ public class UploadCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
@@ -31,10 +30,9 @@ public class UploadCommand implements CommandService {
         TransferId transferId = Factory.getFileTransferAuthService().getTransferIfValid(authKey);
 
         if (transferId == null) {
-            sendFailMessage(ctx,"transfer channel authentication fails");
+            sendFailMessage(ctx, "transfer channel authentication fails");
             return;
         }
-
         uploadReady(ctx, transferId, clientJobKey);
     }
 

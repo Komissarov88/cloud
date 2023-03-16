@@ -39,13 +39,11 @@ public class FileTransferProgressServiceImpl implements FileTransferProgressServ
     @Override
     public void increment(Path path, int transferred) {
         Progress p = progressMap.get(path);
-
         if (transferred < 0 && p != null && p.transferred.get() < p.size) {
             Logger.info("file transfer fail");
             p.transferred.set(FileTransferStatus.INTERRUPTED.value);
             return;
         }
-
         if (p != null) {
             p.transferred.addAndGet(transferred);
         } else {

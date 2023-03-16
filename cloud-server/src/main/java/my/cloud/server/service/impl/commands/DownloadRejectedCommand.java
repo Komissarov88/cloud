@@ -18,11 +18,9 @@ public class DownloadRejectedCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
-
         for (String arg : args) {
             Factory.getFileTransferAuthService().remove(arg);
         }

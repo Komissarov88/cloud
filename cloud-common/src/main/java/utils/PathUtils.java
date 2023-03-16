@@ -10,10 +10,12 @@ import java.util.stream.Collectors;
 
 public class PathUtils {
 
-    private PathUtils() {}
+    private PathUtils() {
+    }
 
     /**
      * Get list of all files in path
+     *
      * @param path to look
      * @return files
      */
@@ -42,7 +44,7 @@ public class PathUtils {
     }
 
     /**
-     * @param root path
+     * @param root  path
      * @param child path
      * @return true if root is actually root
      */
@@ -59,17 +61,16 @@ public class PathUtils {
 
     /**
      * Formatted list of directory content
+     *
      * @param path to look
      * @param root path to relativize from
      * @return array of name and dir prefix or file size
      */
     public static String[] lsDirectory(Path path, Path root) {
-
         final String DIR_PREFIX = "D";
-
         File directory = path.toFile();
 
-        if ( !directory.exists() || directory.isFile()) {
+        if (!directory.exists() || directory.isFile()) {
             return new String[0];
         }
 
@@ -100,6 +101,7 @@ public class PathUtils {
 
     /**
      * String representation of file size
+     *
      * @param file to check
      * @return formatted size
      */

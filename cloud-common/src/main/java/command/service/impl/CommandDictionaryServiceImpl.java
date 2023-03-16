@@ -17,7 +17,6 @@ public class CommandDictionaryServiceImpl implements CommandDictionaryService {
     private final Map<CommandCode, CommandService> commandDictionary;
 
     public CommandDictionaryServiceImpl(Set<CommandService> commandServices) {
-
         Map<CommandCode, CommandService> commandDictionary = new HashMap<>();
         for (CommandService commandService : commandServices) {
             commandDictionary.put(commandService.getCommandCode(), commandService);

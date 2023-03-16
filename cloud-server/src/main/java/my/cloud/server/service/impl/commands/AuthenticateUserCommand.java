@@ -31,7 +31,6 @@ public class AuthenticateUserCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }

@@ -1,7 +1,6 @@
 package command.domain;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**

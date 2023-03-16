@@ -20,7 +20,6 @@ public class GetFormattedFileListCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
@@ -29,10 +28,9 @@ public class GetFormattedFileListCommand implements CommandService {
         File requestFile = getFileFromClientRequest(ctx, request);
 
         if (requestFile == null) {
-            sendFailMessage(ctx,"access violation");
+            sendFailMessage(ctx, "access violation");
             return;
         }
-
         String[] response = PathUtils.lsDirectory(requestFile.toPath(), getUserRootPath(ctx));
         if (response.length > 0) {
             sendResponse(ctx, CommandCode.LS, response);

@@ -24,21 +24,18 @@ public class FilesRequestCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
 
         String request = args[0];
+        String clientDownloadFolder = args[1];
         File requestFile = getFileFromClientRequest(ctx, request);
 
         if (requestFile == null) {
             sendFailMessage(ctx,"access violation");
             return;
         }
-
-        String clientDownloadFolder = args[1];
-
         if (requestFile.canRead()) {
             sendConfirm(ctx, requestFile, clientDownloadFolder);
         } else {
@@ -47,24 +44,20 @@ public class FilesRequestCommand implements CommandService {
     }
 
     private void sendConfirm(ChannelHandlerContext ctx, File requestFile, String clientDownloadFolder) {
-
         List<File> files = PathUtils.getFilesListRecursively(requestFile.toPath());
         long size = PathUtils.getSize(files);
-
         List<String> response = new LinkedList<>();
+        Path rootUserPath = getUserRootPath(ctx);
 
         response.add(String.valueOf(size)); // total size
         response.add(String.valueOf(files.size())); // number of files
         response.add(clientDownloadFolder);
-
-        Path rootUserPath = getUserRootPath(ctx);
         response.add(rootUserPath.relativize(requestFile.toPath()).toString()); // origin folder
 
         for (File f : files) {
             response.add(Factory.getFileTransferAuthService().add(null, f.toPath(), ctx.channel()));
             response.add(requestFile.getParentFile().toPath().relativize(f.toPath()).toString());
         }
-
         sendResponse(ctx, CommandCode.DOWNLOAD_POSSIBLE, response.toArray(new String[0]));
     }
 

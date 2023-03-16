@@ -25,13 +25,11 @@ public class FilesOfferCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
 
         long totalSize = Long.parseLong(args[0]);
-
         List<String> keys = parseEachSecond(args, 1);
 
         if (!haveFreeSpace(ctx, totalSize)) {
@@ -47,13 +45,11 @@ public class FilesOfferCommand implements CommandService {
                 .collect(Collectors.toList());
 
         for (int i = 0; i < files.size(); i++) {
-
             if (!PathUtils.isPathsParentAndChild(getUserRootPath(ctx), files.get(i))) {
                 sendFailMessage(ctx, "access violation");
                 sendResponse(ctx, CommandCode.OFFER_REFUSED, keys.get(i));
                 continue;
             }
-
             String uploadChannelAuthKey = Factory.getFileTransferAuthService().add(null, files.get(i), ctx.channel());
             sendResponse(ctx, CommandCode.UPLOAD_POSSIBLE, uploadChannelAuthKey, keys.get(i));
         }

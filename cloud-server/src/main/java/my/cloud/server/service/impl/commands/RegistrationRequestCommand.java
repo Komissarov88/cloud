@@ -23,7 +23,6 @@ public class RegistrationRequestCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
@@ -32,17 +31,16 @@ public class RegistrationRequestCommand implements CommandService {
         String password = args[1];
 
         if (login.length() == 0 || password.length() == 0) {
-            sendFailMessage(ctx,"login/password expected not empty");
+            sendFailMessage(ctx, "login/password expected not empty");
             ctx.close();
             return;
         }
-
         if (Factory.getDbService().addUser(login, password)) {
             Factory.getServerService().subscribeUser(login, ctx.channel());
             createUserFolder(login);
             sendResponse(ctx, CommandCode.SUCCESS, "registered");
         } else {
-            sendFailMessage(ctx,"user already exists");
+            sendFailMessage(ctx, "user already exists");
             ctx.close();
         }
     }

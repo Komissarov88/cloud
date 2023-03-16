@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.io.FileUtils;
-import utils.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;

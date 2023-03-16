@@ -27,19 +27,18 @@ public class DownloadCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
 
         String key = args[0];
         String clientJobKey = args[1];
-
         Path path = Factory.getFileTransferAuthService().getTransferIfValid(key).destination;
+
         if (path != null) {
             ChunkedFile chunkedFile;
             if ((chunkedFile = getChunkedFile(path.toFile())) == null) {
-                sendFailMessage(ctx,"cant read file");
+                sendFailMessage(ctx,"can't read file");
                 ctx.close();
             }
             sendFile(ctx, chunkedFile, clientJobKey, path);
@@ -60,10 +59,7 @@ public class DownloadCommand implements CommandService {
 
     private void sendFile(ChannelHandlerContext ctx, ChunkedFile cf, String clientJobKey, Path path) {
         try {
-            Command readyCommand = new Command(
-                    CommandCode.DOWNLOAD_READY,
-                    clientJobKey);
-
+            Command readyCommand = new Command(CommandCode.DOWNLOAD_READY, clientJobKey);
             ctx.writeAndFlush(readyCommand).sync();
             ctx.pipeline().replace("ObjectEncoder", "Writer", new ChunkedWriteHandler());
             ctx.pipeline().removeLast();

@@ -20,7 +20,6 @@ public class RemoveFileCommand implements CommandService {
 
     @Override
     public void processCommand(ChannelHandlerContext ctx, String[] args) {
-
         if (notCorrectCommand(ctx, args)) {
             return;
         }
@@ -32,7 +31,6 @@ public class RemoveFileCommand implements CommandService {
             sendFailMessage(ctx, "access violation");
             return;
         }
-
         if (FileUtils.deleteQuietly(requestFile)) {
             sendResponse(ctx, CommandCode.REFRESH_VIEW);
         } else {
